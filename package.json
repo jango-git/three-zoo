@@ -1,0 +1,32 @@
+{
+  "name": "three-zoo",
+  "version": "0.0.1",
+  "description": "zoo of tiny three js tools",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "jango",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jango-git/three-zoo.git"
+  },
+  "type": "module",
+  "dependencies": {},
+  "peerDependencies": {
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.176.0",
+    "typescript": "^5.8.3"
+  }
+}
