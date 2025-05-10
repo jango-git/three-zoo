@@ -1,5 +1,4 @@
 import {
-  AxesHelper,
   Box3,
   DirectionalLight,
   RGBAFormat,
@@ -9,44 +8,80 @@ import {
 } from "three";
 
 export class Sun extends DirectionalLight {
-  private tempVector3D_0 = new Vector3();
-  private tempVector3D_1 = new Vector3();
-  private tempVector3D_2 = new Vector3();
-  private tempVector3D_3 = new Vector3();
-  private tempVector3D_4 = new Vector3();
-  private tempVector3D_5 = new Vector3();
-  private tempVector3D_6 = new Vector3();
-  private tempVector3D_7 = new Vector3();
+  private tempVector3D0 = new Vector3();
+  private tempVector3D1 = new Vector3();
+  private tempVector3D2 = new Vector3();
+  private tempVector3D3 = new Vector3();
+  private tempVector3D4 = new Vector3();
+  private tempVector3D5 = new Vector3();
+  private tempVector3D6 = new Vector3();
+  private tempVector3D7 = new Vector3();
 
   private tempBox3 = new Box3();
   private tempSpherical = new Spherical();
+
+  public get distance(): number {
+    return this.position.length();
+  }
+
+  public get elevation(): number {
+    return this.tempSpherical.setFromVector3(this.position).phi;
+  }
+
+  public get azimuth(): number {
+    return this.tempSpherical.setFromVector3(this.position).theta;
+  }
+
+  public set distance(value: number) {
+    this.tempSpherical.setFromVector3(this.position);
+    this.position.setFromSphericalCoords(
+      value,
+      this.tempSpherical.phi,
+      this.tempSpherical.theta,
+    );
+  }
+
+  public set elevation(value: number) {
+    this.tempSpherical.setFromVector3(this.position);
+    this.position.setFromSphericalCoords(
+      this.tempSpherical.radius,
+      value,
+      this.tempSpherical.theta,
+    );
+  }
+
+  public set azimuth(value: number) {
+    this.tempSpherical.setFromVector3(this.position);
+    this.position.setFromSphericalCoords(
+      this.tempSpherical.radius,
+      this.tempSpherical.phi,
+      value,
+    );
+  }
 
   public setShadowMapFromBox3(box3: Box3): void {
     const camera = this.shadow.camera;
 
     this.target.updateWorldMatrix(true, false);
-    this.lookAt(this.target.getWorldPosition(this.tempVector3D_0));
+    this.lookAt(this.target.getWorldPosition(this.tempVector3D0));
 
     this.updateWorldMatrix(true, false);
 
     const points: Vector3[] = [
-      this.tempVector3D_0.set(box3.min.x, box3.min.y, box3.min.z),
-      this.tempVector3D_1.set(box3.min.x, box3.min.y, box3.max.z),
-      this.tempVector3D_2.set(box3.min.x, box3.max.y, box3.min.z),
-      this.tempVector3D_3.set(box3.min.x, box3.max.y, box3.max.z),
-      this.tempVector3D_4.set(box3.max.x, box3.min.y, box3.min.z),
-      this.tempVector3D_5.set(box3.max.x, box3.min.y, box3.max.z),
-      this.tempVector3D_6.set(box3.max.x, box3.max.y, box3.min.z),
-      this.tempVector3D_7.set(box3.max.x, box3.max.y, box3.max.z),
+      this.tempVector3D0.set(box3.min.x, box3.min.y, box3.min.z),
+      this.tempVector3D1.set(box3.min.x, box3.min.y, box3.max.z),
+      this.tempVector3D2.set(box3.min.x, box3.max.y, box3.min.z),
+      this.tempVector3D3.set(box3.min.x, box3.max.y, box3.max.z),
+      this.tempVector3D4.set(box3.max.x, box3.min.y, box3.min.z),
+      this.tempVector3D5.set(box3.max.x, box3.min.y, box3.max.z),
+      this.tempVector3D6.set(box3.max.x, box3.max.y, box3.min.z),
+      this.tempVector3D7.set(box3.max.x, box3.max.y, box3.max.z),
     ];
 
     const inverseMatrix = this.matrixWorld.clone().invert();
 
     for (const point of points) {
       point.applyMatrix4(inverseMatrix);
-      const axesHelper = new AxesHelper(1);
-      axesHelper.position.copy(point);
-      this.add(axesHelper);
     }
 
     const newBox3 = this.tempBox3.setFromPoints(points);
@@ -63,7 +98,7 @@ export class Sun extends DirectionalLight {
     camera.updateProjectionMatrix();
   }
 
-  public setDirectionFromHDR(texture: Texture, distance: number = 1) {
+  public setDirectionFromHDR(texture: Texture, distance = 1): void {
     const data = texture.image.data;
     const width = texture.image.width;
     const height = texture.image.height;
@@ -94,44 +129,5 @@ export class Sun extends DirectionalLight {
     const azimuth = u * -Math.PI * 2 - Math.PI / 2;
 
     this.position.setFromSphericalCoords(distance, elevation, azimuth);
-  }
-
-  public get distance() {
-    return this.position.length();
-  }
-
-  public set distance(value: number) {
-    this.tempSpherical.setFromVector3(this.position);
-    this.position.setFromSphericalCoords(
-      value,
-      this.tempSpherical.phi,
-      this.tempSpherical.theta,
-    );
-  }
-
-  public get elevation() {
-    return this.tempSpherical.setFromVector3(this.position).phi;
-  }
-
-  public set elevation(value) {
-    this.tempSpherical.setFromVector3(this.position);
-    this.position.setFromSphericalCoords(
-      this.tempSpherical.radius,
-      value,
-      this.tempSpherical.theta,
-    );
-  }
-
-  public get azimuth() {
-    return this.tempSpherical.setFromVector3(this.position).theta;
-  }
-
-  public set azimuth(value) {
-    this.tempSpherical.setFromVector3(this.position);
-    this.position.setFromSphericalCoords(
-      this.tempSpherical.radius,
-      this.tempSpherical.phi,
-      value,
-    );
   }
 }

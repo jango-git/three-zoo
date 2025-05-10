@@ -1,4 +1,5 @@
+export * from "./Bounds";
+export * from "./Enumerator";
 export * from "./InstanceAssembler";
-export * from "./Object3DToolbox";
 export * from "./SceneProcessor";
 export * from "./Sun";

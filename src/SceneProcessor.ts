@@ -1,14 +1,15 @@
 import { FrontSide, Material, Mesh, Object3D } from "three";
+import { Enumerator } from "./Enumerator";
 import { InstanceAssembler } from "./InstanceAssembler";
-import { Object3DToolbox } from "./Object3DToolbox";
 
 type IPattern = string | RegExp;
 
 interface IOptions {
   asset: Object3D;
-  castShadowNames?: IPattern[];
-  receiveShadowNames?: IPattern[];
+  castShadowMeshNames?: IPattern[];
+  receiveShadowMeshNames?: IPattern[];
   transparentMaterialNames?: IPattern[];
+  noDepthWriteMaterialNames?: IPattern[];
 }
 
 export class SceneProcessor {
@@ -16,25 +17,28 @@ export class SceneProcessor {
     const container = options.asset.clone();
     InstanceAssembler.assemble({ container: container });
 
-    Object3DToolbox.enumerateMaterials(container, (material: Material) => {
+    Enumerator.enumerateMaterials(container, (material: Material) => {
       material.transparent = SceneProcessor.matchesAny(
         material.name,
         options.transparentMaterialNames,
       );
+      material.depthWrite = !SceneProcessor.matchesAny(
+        material.name,
+        options.noDepthWriteMaterialNames,
+      );
       material.side = FrontSide;
       material.forceSinglePass = true;
       material.depthTest = true;
-      material.depthWrite = true;
     });
 
-    Object3DToolbox.enumerateObjectsByType(container, Mesh, (child: Mesh) => {
+    Enumerator.enumerateObjectsByType(container, Mesh, (child: Mesh) => {
       child.castShadow = SceneProcessor.matchesAny(
         child.name,
-        options.castShadowNames,
+        options.castShadowMeshNames,
       );
       child.receiveShadow = SceneProcessor.matchesAny(
         child.name,
-        options.receiveShadowNames,
+        options.receiveShadowMeshNames,
       );
     });
 
