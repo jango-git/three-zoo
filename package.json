@@ -1,21 +1,21 @@
 {
   "name": "three-zoo",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "zoo of tiny three js tools",
+  "scripts": {
+    "build": "rollup -c"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
-  "scripts": {
-    "build": "tsc"
-  },
+  "files": [
+    "dist"
+  ],
   "keywords": [],
   "author": "jango",
   "license": "MIT",
@@ -24,15 +24,17 @@
     "url": "https://github.com/jango-git/three-zoo.git"
   },
   "type": "module",
-  "dependencies": {},
   "peerDependencies": {
     "three": "^0.176.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@types/three": "^0.176.0",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
     "eslint": "^9.26.0",
+    "rollup": "^4.40.2",
+    "rollup-plugin-typescript2": "^0.36.0",
     "typescript": "^5.8.3"
   }
 }
