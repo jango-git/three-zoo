@@ -1,9 +1,10 @@
 {
   "name": "three-zoo",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "zoo of tiny three js tools",
   "scripts": {
-    "build": "rollup -c"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && rollup -c"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
