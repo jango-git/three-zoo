@@ -1,9 +1,12 @@
 {
   "name": "three-zoo",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "zoo of tiny three js tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
