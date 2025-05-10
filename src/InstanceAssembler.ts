@@ -42,6 +42,7 @@ export class InstanceAssembler {
           if (child.castShadow) entry.castShadow = true;
           if (child.receiveShadow) entry.receiveShadow = true;
 
+          entry.meshes.push(child);
           dictionary.set(key, entry);
         }
       },
@@ -85,6 +86,6 @@ export class InstanceAssembler {
       }
     }
 
-    options.container.add(...instancedMeshes);
+    if (instancedMeshes.length > 0) options.container.add(...instancedMeshes);
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "zoo of tiny three js tools",
   "scripts": {
     "build": "rollup -c"
