@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "zoo of tiny three js tools",
   "scripts": {
     "clean": "rm -rf dist",
