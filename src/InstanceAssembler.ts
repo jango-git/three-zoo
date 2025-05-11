@@ -1,5 +1,6 @@
 import { InstancedMesh, Material, Mesh, Object3D } from "three";
 import { Enumerator } from "./Enumerator";
+import { GeometryComparator } from "./GeometryComparator";
 
 interface IMeshDescriptor {
   meshes: Mesh[];
@@ -11,13 +12,15 @@ interface IMeshDescriptor {
 interface IOptions {
   container: Object3D;
   filter?: (child: Mesh) => boolean;
-  disposeOriginal?: boolean;
+  geometryTolerance?: number;
 }
 
 export class InstanceAssembler {
   public static assemble(options: IOptions): void {
     const dictionary = new Map<string, IMeshDescriptor>();
     const instancedMeshes: InstancedMesh[] = [];
+    const tolerance = options.geometryTolerance ?? 1e-6;
+    const geometryHashCache = new Map<string, string>();
 
     Enumerator.enumerateObjectsByType(
       options.container,
@@ -31,8 +34,19 @@ export class InstanceAssembler {
             ? child.material
             : [child.material];
 
-          const key = `${child.geometry.uuid}|${materials.map((m) => m.uuid).join(",")}`;
-          const entry = dictionary.get(key) ?? {
+          let geometryHash = geometryHashCache.get(child.geometry.uuid);
+          if (!geometryHash) {
+            geometryHash = GeometryComparator.getGeometryHash(
+              child.geometry,
+              tolerance,
+            );
+            geometryHashCache.set(child.geometry.uuid, geometryHash);
+          }
+
+          const materialKey = materials.map((m) => m.uuid).join(",");
+          const compositeKey = `${geometryHash}|${materialKey}`;
+
+          const entry = dictionary.get(compositeKey) ?? {
             meshes: [],
             materials: materials,
             castShadow: false,
@@ -43,7 +57,7 @@ export class InstanceAssembler {
           if (child.receiveShadow) entry.receiveShadow = true;
 
           entry.meshes.push(child);
-          dictionary.set(key, entry);
+          dictionary.set(compositeKey, entry);
         }
       },
     );
@@ -78,14 +92,10 @@ export class InstanceAssembler {
       for (const mesh of sortedMeshes) {
         mesh.parent?.remove(mesh);
       }
-
-      if (options.disposeOriginal === true) {
-        for (const material of materials) {
-          material.dispose();
-        }
-      }
     }
 
-    if (instancedMeshes.length > 0) options.container.add(...instancedMeshes);
+    if (instancedMeshes.length > 0) {
+      options.container.add(...instancedMeshes);
+    }
   }
 }
