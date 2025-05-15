@@ -72,6 +72,44 @@ export class Enumerator {
     }
   }
 
+  public static filterObjects(object: Object3D, name: RegExp): Object3D[] {
+    let result: Object3D[] = [];
+
+    if (object.name && name.test(object.name)) {
+      result.push(object);
+    }
+
+    for (const child of object.children) {
+      result = result.concat(Enumerator.filterObjects(child, name));
+    }
+
+    return result;
+  }
+
+  public static filterMaterials(object: Object3D, name: RegExp): Material[] {
+    let result: Material[] = [];
+
+    if (object instanceof Mesh) {
+      if (Array.isArray(object.material)) {
+        for (const material of object.material) {
+          if (material.name && name.test(material.name)) {
+            result.push(material);
+          }
+        }
+      } else {
+        if (object.material.name && name.test(object.material.name)) {
+          result.push(object.material);
+        }
+      }
+    }
+
+    for (const child of object.children) {
+      result = result.concat(Enumerator.filterMaterials(child, name));
+    }
+
+    return result;
+  }
+
   public static setShadowRecursive(
     object: Object3D,
     castShadow = true,
