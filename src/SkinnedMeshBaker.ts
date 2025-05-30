@@ -1,12 +1,5 @@
-import {
-  AnimationClip,
-  AnimationMixer,
-  BufferAttribute,
-  Mesh,
-  Object3D,
-  SkinnedMesh,
-  Vector3,
-} from "three";
+import type { AnimationClip, Object3D, SkinnedMesh } from "three";
+import { AnimationMixer, BufferAttribute, Mesh, Vector3 } from "three";
 
 /**
  * Utilities for baking poses and animations from SkinnedMesh into a regular static Mesh.
@@ -19,7 +12,7 @@ export class SkinnedMeshBaker {
    * @param skinnedMesh - SkinnedMesh from which to bake the geometry
    * @returns A new Mesh with positions corresponding to the current bone positions
    */
-  static bakePose(skinnedMesh: SkinnedMesh): Mesh {
+  public static bakePose(skinnedMesh: SkinnedMesh): Mesh {
     const bakedGeometry = skinnedMesh.geometry.clone();
     const position = bakedGeometry.attributes["position"] as BufferAttribute;
     const newPositions = new Float32Array(position.count * 3);
@@ -55,7 +48,7 @@ export class SkinnedMeshBaker {
    * @param clip - The animation clip
    * @returns A new Mesh with geometry matching the specified animation frame
    */
-  static bakeAnimationFrame(
+  public static bakeAnimationFrame(
     armature: Object3D,
     skinnedMesh: SkinnedMesh,
     timeOffset: number,

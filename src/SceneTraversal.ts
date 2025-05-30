@@ -1,17 +1,22 @@
-import { Material, Mesh, Object3D } from "three";
+import type { Material, Object3D } from "three";
+import { Mesh } from "three";
 
 type Constructor<T> = abstract new (...args: never[]) => T;
 
-export class Enumerator {
+export class SceneTraversal {
   public static getObjectByName(
     object: Object3D,
     name: string,
   ): Object3D | null {
-    if (object.name === name) return object;
+    if (object.name === name) {
+      return object;
+    }
 
     for (const child of object.children) {
-      const result = Enumerator.getObjectByName(child, name);
-      if (result) return result;
+      const result = SceneTraversal.getObjectByName(child, name);
+      if (result) {
+        return result;
+      }
     }
 
     return null;
@@ -24,7 +29,9 @@ export class Enumerator {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
         for (const material of object.material) {
-          if (material.name === name) return material;
+          if (material.name === name) {
+            return material;
+          }
         }
       } else if (object.material.name === name) {
         return object.material;
@@ -32,8 +39,10 @@ export class Enumerator {
     }
 
     for (const child of object.children) {
-      const material = Enumerator.getMaterialByName(child, name);
-      if (material) return material;
+      const material = SceneTraversal.getMaterialByName(child, name);
+      if (material) {
+        return material;
+      }
     }
 
     return null;
@@ -49,7 +58,7 @@ export class Enumerator {
     }
 
     for (const child of object.children) {
-      Enumerator.enumerateObjectsByType(child, type, callback);
+      SceneTraversal.enumerateObjectsByType(child, type, callback);
     }
   }
 
@@ -68,7 +77,7 @@ export class Enumerator {
     }
 
     for (const child of object.children) {
-      Enumerator.enumerateMaterials(child, callback);
+      SceneTraversal.enumerateMaterials(child, callback);
     }
   }
 
@@ -80,7 +89,7 @@ export class Enumerator {
     }
 
     for (const child of object.children) {
-      result = result.concat(Enumerator.filterObjects(child, name));
+      result = result.concat(SceneTraversal.filterObjects(child, name));
     }
 
     return result;
@@ -104,7 +113,7 @@ export class Enumerator {
     }
 
     for (const child of object.children) {
-      result = result.concat(Enumerator.filterMaterials(child, name));
+      result = result.concat(SceneTraversal.filterMaterials(child, name));
     }
 
     return result;
@@ -121,7 +130,7 @@ export class Enumerator {
     }
 
     for (const child of object.children) {
-      Enumerator.setShadowRecursive(child, castShadow, receiveShadow);
+      SceneTraversal.setShadowRecursive(child, castShadow, receiveShadow);
     }
   }
 }

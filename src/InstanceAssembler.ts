@@ -1,6 +1,7 @@
-import { InstancedMesh, Material, Mesh, Object3D } from "three";
-import { Enumerator } from "./Enumerator";
-import { GeometryComparator } from "./GeometryComparator";
+import type { Material, Object3D } from "three";
+import { InstancedMesh, Mesh } from "three";
+import { GeometryHasher } from "./GeometryHasher";
+import { SceneTraversal } from "./SceneTraversal";
 
 interface IMeshDescriptor {
   meshes: Mesh[];
@@ -22,7 +23,7 @@ export class InstanceAssembler {
     const tolerance = options.geometryTolerance ?? 1e-6;
     const geometryHashCache = new Map<string, string>();
 
-    Enumerator.enumerateObjectsByType(
+    SceneTraversal.enumerateObjectsByType(
       options.container,
       Mesh,
       (child: Mesh) => {
@@ -36,7 +37,7 @@ export class InstanceAssembler {
 
           let geometryHash = geometryHashCache.get(child.geometry.uuid);
           if (!geometryHash) {
-            geometryHash = GeometryComparator.getGeometryHash(
+            geometryHash = GeometryHasher.getGeometryHash(
               child.geometry,
               tolerance,
             );
@@ -53,8 +54,12 @@ export class InstanceAssembler {
             receiveShadow: false,
           };
 
-          if (child.castShadow) entry.castShadow = true;
-          if (child.receiveShadow) entry.receiveShadow = true;
+          if (child.castShadow) {
+            entry.castShadow = true;
+          }
+          if (child.receiveShadow) {
+            entry.receiveShadow = true;
+          }
 
           entry.meshes.push(child);
           dictionary.set(compositeKey, entry);
@@ -63,7 +68,9 @@ export class InstanceAssembler {
     );
 
     for (const descriptor of dictionary.values()) {
-      if (descriptor.meshes.length < 2) continue;
+      if (descriptor.meshes.length < 2) {
+        continue;
+      }
       const { meshes, materials, castShadow, receiveShadow } = descriptor;
 
       const sortedMeshes = meshes.sort((a, b) => a.name.localeCompare(b.name));

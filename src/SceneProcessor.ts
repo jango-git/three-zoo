@@ -1,6 +1,7 @@
-import { FrontSide, Material, Mesh, Object3D } from "three";
-import { Enumerator } from "./Enumerator";
+import type { Material, Object3D } from "three";
+import { FrontSide, Mesh } from "three";
 import { InstanceAssembler } from "./InstanceAssembler";
+import { SceneTraversal } from "./SceneTraversal";
 
 type IPattern = string | RegExp;
 
@@ -17,7 +18,7 @@ export class SceneProcessor {
     const container = options.asset.clone();
     InstanceAssembler.assemble({ container: container });
 
-    Enumerator.enumerateMaterials(container, (material: Material) => {
+    SceneTraversal.enumerateMaterials(container, (material: Material) => {
       material.transparent = SceneProcessor.matchesAny(
         material.name,
         options.transparentMaterialNames,
@@ -31,7 +32,7 @@ export class SceneProcessor {
       material.depthTest = true;
     });
 
-    Enumerator.enumerateObjectsByType(container, Mesh, (child: Mesh) => {
+    SceneTraversal.enumerateObjectsByType(container, Mesh, (child: Mesh) => {
       child.castShadow = SceneProcessor.matchesAny(
         child.name,
         options.castShadowMeshNames,
