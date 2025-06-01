@@ -88,15 +88,24 @@ export class SceneTraversal {
   }
 
   /** Find all objects whose names match a pattern */
-  public static filterObjects(object: Object3D, name: RegExp): Object3D[] {
+  public static filterObjects(
+    object: Object3D,
+    filter: RegExp | ((object: Object3D) => boolean),
+  ): Object3D[] {
     let result: Object3D[] = [];
 
-    if (object.name && name.test(object.name)) {
-      result.push(object);
+    if (typeof filter === "function") {
+      if (filter(object)) {
+        result.push(object);
+      }
+    } else {
+      if (object.name && filter.test(object.name)) {
+        result.push(object);
+      }
     }
 
     for (const child of object.children) {
-      result = result.concat(SceneTraversal.filterObjects(child, name));
+      result = result.concat(SceneTraversal.filterObjects(child, filter));
     }
 
     return result;

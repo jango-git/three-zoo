@@ -1,4 +1,4 @@
-import type { Object3D } from "three";
+import type { BufferAttribute, Object3D, SkinnedMesh } from "three";
 import { Box3, Vector3 } from "three";
 
 /**
@@ -33,6 +33,26 @@ export class Bounds extends Box3 {
   /** Length of the box's diagonal */
   public get diagonal(): number {
     return this.tempVector3A.subVectors(this.max, this.min).length();
+  }
+
+  public setFromSkinnedMesh(skinnedMesh: SkinnedMesh): Bounds {
+    skinnedMesh.updateWorldMatrix(true, true);
+    skinnedMesh.skeleton.update();
+
+    const geometry = skinnedMesh.geometry;
+    const position = geometry.attributes["position"] as BufferAttribute;
+    const target = new Vector3();
+
+    const points = [];
+
+    for (let i = 0; i < position.count; i++) {
+      target.fromBufferAttribute(position, i);
+      skinnedMesh.applyBoneTransform(i, target);
+      points.push(target.clone());
+    }
+
+    this.setFromPoints(points);
+    return this;
   }
 
   /** Volume (width * height * depth) */

@@ -1,4 +1,5 @@
-import { MathUtils, PerspectiveCamera } from "three";
+import type { Box3, BufferAttribute, SkinnedMesh } from "three";
+import { MathUtils, PerspectiveCamera, Vector3 } from "three";
 
 const DEFAULT_HORIZONTAL_FOV = 90;
 const DEFAULT_VERTICAL_FOV = 90;
@@ -87,7 +88,7 @@ export class BiFovCamera extends PerspectiveCamera {
    * In portrait: preserves vertical FOV
    */
   public override updateProjectionMatrix(): void {
-    if (this.aspect >= 1) {
+    if (this.aspect > 1) {
       // Landscape orientation: preserve horizontal FOV
       const radians = MathUtils.degToRad(this.horizontalFovInternal);
       this.fov = MathUtils.radToDeg(
@@ -123,7 +124,110 @@ export class BiFovCamera extends PerspectiveCamera {
     );
   }
 
-  /** Create a clone of this camera */
+  public fitPointsVerticalFov(vertices: Vector3[]): void {
+    const up = new Vector3(0, 1, 0).applyQuaternion(this.quaternion);
+
+    let maxVerticalAngle = 0;
+
+    for (const vertex of vertices) {
+      const vertexToCam = this.position.clone().sub(vertex);
+      const vertexDirection = vertexToCam.normalize();
+
+      const verticalAngle =
+        Math.asin(Math.abs(vertexDirection.dot(up))) *
+        Math.sign(vertexDirection.dot(up));
+
+      if (Math.abs(verticalAngle) > maxVerticalAngle) {
+        maxVerticalAngle = Math.abs(verticalAngle);
+      }
+    }
+
+    const requiredFov = MathUtils.radToDeg(2 * maxVerticalAngle);
+
+    this.verticalFovInternal = MathUtils.clamp(requiredFov, MIN_FOV, MAX_FOV);
+    this.updateProjectionMatrix();
+  }
+
+  public fitBoxVerticalFov(box: Box3): void {
+    this.fitPointsVerticalFov([
+      new Vector3(box.min.x, box.min.y, box.min.z),
+      new Vector3(box.min.x, box.min.y, box.max.z),
+      new Vector3(box.min.x, box.max.y, box.min.z),
+      new Vector3(box.min.x, box.max.y, box.max.z),
+      new Vector3(box.max.x, box.min.y, box.min.z),
+      new Vector3(box.max.x, box.min.y, box.max.z),
+      new Vector3(box.max.x, box.max.y, box.min.z),
+      new Vector3(box.max.x, box.max.y, box.max.z),
+    ]);
+  }
+
+  public fitSkinnedMeshVerticalFov(skinnedMesh: SkinnedMesh): void {
+    skinnedMesh.updateWorldMatrix(true, true);
+    skinnedMesh.skeleton.update();
+
+    const bakedGeometry = skinnedMesh.geometry;
+    const position = bakedGeometry.attributes["position"] as BufferAttribute;
+    const target = new Vector3();
+
+    const points = [];
+
+    for (let i = 0; i < position.count; i++) {
+      target.fromBufferAttribute(position, i);
+      skinnedMesh.applyBoneTransform(i, target);
+      points.push(target.clone());
+    }
+
+    this.fitPointsVerticalFov(points);
+  }
+
+  public lookAtCenterOfMass(skinnedMesh: SkinnedMesh): void {
+    skinnedMesh.updateWorldMatrix(true, true);
+    skinnedMesh.skeleton.update();
+
+    const bakedGeometry = skinnedMesh.geometry;
+    const position = bakedGeometry.attributes.position as BufferAttribute;
+    const target = new Vector3();
+    const points: Vector3[] = [];
+
+    for (let i = 0; i < position.count; i++) {
+      target.fromBufferAttribute(position, i);
+      skinnedMesh.applyBoneTransform(i, target);
+      points.push(target.clone());
+    }
+
+    const findMainCluster = (points: Vector3[], iterations = 3): Vector3 => {
+      if (points.length === 0) {
+        return new Vector3();
+      }
+
+      let center = points[Math.floor(points.length / 2)].clone();
+
+      for (let i = 0; i < iterations; i++) {
+        let total = new Vector3();
+        let count = 0;
+
+        for (const point of points) {
+          if (
+            point.distanceTo(center) < point.distanceTo(total) ||
+            count === 0
+          ) {
+            total.add(point);
+            count++;
+          }
+        }
+
+        if (count > 0) {
+          center = total.divideScalar(count);
+        }
+      }
+
+      return center;
+    };
+
+    const centerOfMass = findMainCluster(points);
+    this.lookAt(centerOfMass);
+  }
+
   public override clone(): this {
     const camera = new BiFovCamera(
       this.horizontalFovInternal,
