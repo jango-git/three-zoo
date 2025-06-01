@@ -29,7 +29,7 @@ export default [
       "no-magic-numbers": [
         "warn",
         {
-          ignore: [0, 1, -1],
+          ignore: [0, 1, -1, 2],
           ignoreArrayIndexes: true,
           enforceConst: true,
           detectObjects: true,
@@ -45,7 +45,6 @@ export default [
         { allowExpressions: false },
       ],
       "@typescript-eslint/explicit-module-boundary-types": "error",
-      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-inferrable-types": "warn",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",

@@ -1,46 +1,46 @@
+import type { Object3D } from "three";
 import { Box3, Vector3 } from "three";
 
+/**
+ * Box3 with additional convenience methods for width, height, depth, etc.
+ */
 export class Bounds extends Box3 {
+  /** Temporary vector for calculations */
   private readonly tempVector3A: Vector3 = new Vector3();
 
-  /**
-   * Gets the width (x-axis length) of the bounding box
-   */
+  constructor(object?: Object3D) {
+    super();
+    if (object) {
+      this.setFromObject(object);
+    }
+  }
+
+  /** Width (x-axis length) */
   public get width(): number {
     return this.max.x - this.min.x;
   }
 
-  /**
-   * Gets the height (y-axis length) of the bounding box
-   */
+  /** Height (y-axis length) */
   public get height(): number {
     return this.max.y - this.min.y;
   }
 
-  /**
-   * Gets the depth (z-axis length) of the bounding box
-   */
+  /** Depth (z-axis length) */
   public get depth(): number {
     return this.max.z - this.min.z;
   }
 
-  /**
-   * Gets the length of the box's diagonal
-   */
+  /** Length of the box's diagonal */
   public get diagonal(): number {
     return this.tempVector3A.subVectors(this.max, this.min).length();
   }
 
-  /**
-   * Gets the volume of the bounding box
-   */
+  /** Volume (width * height * depth) */
   public getVolume(): number {
     return this.width * this.height * this.depth;
   }
 
-  /**
-   * Gets the surface area of the bounding box
-   */
+  /** Surface area (sum of all six faces) */
   public getSurfaceArea(): number {
     const w = this.width;
     const h = this.height;

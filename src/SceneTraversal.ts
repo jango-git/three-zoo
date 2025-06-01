@@ -1,9 +1,12 @@
 import type { Material, Object3D } from "three";
 import { Mesh } from "three";
 
-type Constructor<T> = abstract new (...args: never[]) => T;
+/** Constructor type for type-safe scene traversal */
+export type Constructor<T> = abstract new (...args: never[]) => T;
 
+/** Find and modify objects in a Three.js scene */
 export class SceneTraversal {
+  /** Find first object with exact name match */
   public static getObjectByName(
     object: Object3D,
     name: string,
@@ -22,6 +25,7 @@ export class SceneTraversal {
     return null;
   }
 
+  /** Find first material with exact name match */
   public static getMaterialByName(
     object: Object3D,
     name: string,
@@ -48,6 +52,7 @@ export class SceneTraversal {
     return null;
   }
 
+  /** Process all objects of a specific type */
   public static enumerateObjectsByType<T>(
     object: Object3D,
     type: Constructor<T>,
@@ -62,6 +67,7 @@ export class SceneTraversal {
     }
   }
 
+  /** Process all materials in meshes */
   public static enumerateMaterials(
     object: Object3D,
     callback: (material: Material) => void,
@@ -81,6 +87,7 @@ export class SceneTraversal {
     }
   }
 
+  /** Find all objects whose names match a pattern */
   public static filterObjects(object: Object3D, name: RegExp): Object3D[] {
     let result: Object3D[] = [];
 
@@ -95,6 +102,7 @@ export class SceneTraversal {
     return result;
   }
 
+  /** Find all materials whose names match a pattern */
   public static filterMaterials(object: Object3D, name: RegExp): Material[] {
     let result: Material[] = [];
 
@@ -119,10 +127,12 @@ export class SceneTraversal {
     return result;
   }
 
+  /** Set shadow properties on meshes */
   public static setShadowRecursive(
     object: Object3D,
     castShadow = true,
     receiveShadow = true,
+    filter?: (object: Object3D) => boolean,
   ): void {
     if (object instanceof Mesh || "isMesh" in object) {
       (object as Mesh).castShadow = castShadow;
@@ -130,7 +140,12 @@ export class SceneTraversal {
     }
 
     for (const child of object.children) {
-      SceneTraversal.setShadowRecursive(child, castShadow, receiveShadow);
+      SceneTraversal.setShadowRecursive(
+        child,
+        castShadow,
+        receiveShadow,
+        filter,
+      );
     }
   }
 }

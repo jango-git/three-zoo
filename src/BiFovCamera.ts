@@ -1,35 +1,29 @@
 import { MathUtils, PerspectiveCamera } from "three";
 
-/**
- * Default camera settings
- */
 const DEFAULT_HORIZONTAL_FOV = 90;
 const DEFAULT_VERTICAL_FOV = 90;
 const DEFAULT_ASPECT = 1;
 const DEFAULT_NEAR = 1;
 const DEFAULT_FAR = 1000;
 
+const MIN_FOV = 1;
+const MAX_FOV = 179;
+
 /**
- * BiFovCamera - A specialized PerspectiveCamera that supports independent horizontal and vertical FOV settings
- *
- * This camera extends Three.js PerspectiveCamera to provide better control over the field of view,
- * allowing separate horizontal and vertical FOV values. The camera automatically adjusts its projection
- * matrix based on the aspect ratio to maintain proper perspective.
- *
- * @extends PerspectiveCamera
+ * A camera that supports independent horizontal and vertical FOV settings.
+ * Extends Three.js PerspectiveCamera to allow separate control over horizontal
+ * and vertical fields of view.
  */
 export class BiFovCamera extends PerspectiveCamera {
   private horizontalFovInternal: number;
   private verticalFovInternal: number;
 
   /**
-   * Creates a new BiFovCamera instance
-   *
-   * @param horizontalFov - Horizontal field of view in degrees (default: 90)
-   * @param verticalFov - Vertical field of view in degrees (default: 90)
-   * @param aspect - Aspect ratio (width/height) of the viewport (default: 1)
-   * @param near - Near clipping plane distance (default: 1)
-   * @param far - Far clipping plane distance (default: 1000)
+   * @param horizontalFov - Horizontal FOV in degrees (90° default)
+   * @param verticalFov - Vertical FOV in degrees (90° default)
+   * @param aspect - Width/height ratio (1 default)
+   * @param near - Near clipping plane (1 default)
+   * @param far - Far clipping plane (1000 default)
    */
   constructor(
     horizontalFov = DEFAULT_HORIZONTAL_FOV,
@@ -44,52 +38,42 @@ export class BiFovCamera extends PerspectiveCamera {
     this.updateProjectionMatrix();
   }
 
-  /**
-   * Gets the horizontal field of view in degrees
-   */
+  /** Current horizontal FOV in degrees */
   public get horizontalFov(): number {
     return this.horizontalFovInternal;
   }
 
-  /**
-   * Gets the vertical field of view in degrees
-   */
+  /** Current vertical FOV in degrees */
   public get verticalFov(): number {
     return this.verticalFovInternal;
   }
 
-  /**
-   * Sets the horizontal field of view in degrees
-   * @param value - The new horizontal FOV value
-   */
+  /** Set horizontal FOV in degrees (clamped between 1° and 179°) */
   public set horizontalFov(value: number) {
-    this.horizontalFovInternal = MathUtils.clamp(value, 1, 179);
+    this.horizontalFovInternal = MathUtils.clamp(value, MIN_FOV, MAX_FOV);
     this.updateProjectionMatrix();
   }
 
-  /**
-   * Sets the vertical field of view in degrees
-   * @param value - The new vertical FOV value
-   */
+  /** Set vertical FOV in degrees (clamped between 1° and 179°) */
   public set verticalFov(value: number) {
-    this.verticalFovInternal = MathUtils.clamp(value, 1, 179);
+    this.verticalFovInternal = MathUtils.clamp(value, MIN_FOV, MAX_FOV);
     this.updateProjectionMatrix();
   }
 
   /**
-   * Updates both horizontal and vertical FOV simultaneously
-   * @param horizontal - New horizontal FOV in degrees
-   * @param vertical - New vertical FOV in degrees
+   * Update both horizontal and vertical FOV
+   * @param horizontal - Horizontal FOV in degrees
+   * @param vertical - Vertical FOV in degrees
    */
   public setFov(horizontal: number, vertical: number): void {
-    this.horizontalFovInternal = MathUtils.clamp(horizontal, 1, 179);
-    this.verticalFovInternal = MathUtils.clamp(vertical, 1, 179);
+    this.horizontalFovInternal = MathUtils.clamp(horizontal, MIN_FOV, MAX_FOV);
+    this.verticalFovInternal = MathUtils.clamp(vertical, MIN_FOV, MAX_FOV);
     this.updateProjectionMatrix();
   }
 
   /**
-   * Copies FOV settings from another BiFovCamera
-   * @param source - The camera to copy settings from
+   * Copy FOV settings from another BiFovCamera
+   * @param source - Camera to copy from
    */
   public copyFovSettings(source: BiFovCamera): void {
     this.horizontalFovInternal = source.horizontalFov;
@@ -98,9 +82,9 @@ export class BiFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Updates the projection matrix based on current FOV settings and aspect ratio
-   * For aspect ratios >= 1 (landscape), horizontal FOV is preserved
-   * For aspect ratios < 1 (portrait), vertical FOV is preserved
+   * Updates the projection matrix based on FOV settings and aspect ratio.
+   * In landscape: preserves horizontal FOV
+   * In portrait: preserves vertical FOV
    */
   public override updateProjectionMatrix(): void {
     if (this.aspect >= 1) {
@@ -117,9 +101,7 @@ export class BiFovCamera extends PerspectiveCamera {
     super.updateProjectionMatrix();
   }
 
-  /**
-   * Returns the actual horizontal FOV after aspect ratio adjustments
-   */
+  /** Get actual horizontal FOV after aspect ratio adjustments */
   public getEffectiveHorizontalFov(): number {
     if (this.aspect >= 1) {
       return this.horizontalFovInternal;
@@ -130,9 +112,7 @@ export class BiFovCamera extends PerspectiveCamera {
     );
   }
 
-  /**
-   * Returns the actual vertical FOV after aspect ratio adjustments
-   */
+  /** Get actual vertical FOV after aspect ratio adjustments */
   public getEffectiveVerticalFov(): number {
     if (this.aspect < 1) {
       return this.verticalFovInternal;
@@ -143,9 +123,7 @@ export class BiFovCamera extends PerspectiveCamera {
     );
   }
 
-  /**
-   * Creates a clone of this camera with the same properties
-   */
+  /** Create a clone of this camera */
   public override clone(): this {
     const camera = new BiFovCamera(
       this.horizontalFovInternal,

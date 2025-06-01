@@ -1,20 +1,16 @@
 import type { Texture } from "three";
 import { Box3, DirectionalLight, RGBAFormat, Spherical, Vector3 } from "three";
 
-/**
- * Sun extends Three.js DirectionalLight to provide a specialized light source that simulates
- * sunlight with advanced positioning and shadow controls.
- * 
- * Features:
- * - Spherical coordinate control (distance, elevation, azimuth)
- * - Automatic shadow map configuration based on bounding boxes
- * - HDR environment map-based positioning
- * - Efficient temporary vector management for calculations
- * 
- * @extends DirectionalLight
- */
+const RGBA_CHANNEL_COUNT = 4;
+const RGB_CHANNEL_COUNT = 3;
+
+const LUMINANCE_R = 0.2126;
+const LUMINANCE_G = 0.7152;
+const LUMINANCE_B = 0.0722;
+
+/** A directional light with spherical positioning controls */
 export class Sun extends DirectionalLight {
-  // Temporary vectors for calculations to avoid garbage collection
+  /** Internal vectors to avoid garbage collection */
   private readonly tempVector3D0 = new Vector3();
   private readonly tempVector3D1 = new Vector3();
   private readonly tempVector3D2 = new Vector3();
@@ -23,38 +19,25 @@ export class Sun extends DirectionalLight {
   private readonly tempVector3D5 = new Vector3();
   private readonly tempVector3D6 = new Vector3();
   private readonly tempVector3D7 = new Vector3();
-
   private readonly tempBox3 = new Box3();
   private readonly tempSpherical = new Spherical();
 
-  /**
-   * Gets the distance of the sun from its target (radius in spherical coordinates)
-   * @returns The distance in world units
-   */
+  /** Distance from the light to its target */
   public get distance(): number {
     return this.position.length();
   }
 
-  /**
-   * Gets the elevation angle of the sun (phi in spherical coordinates)
-   * @returns The elevation in radians
-   */
+  /** Vertical angle from the ground in radians */
   public get elevation(): number {
     return this.tempSpherical.setFromVector3(this.position).phi;
   }
 
-  /**
-   * Gets the azimuth angle of the sun (theta in spherical coordinates)
-   * @returns The azimuth in radians
-   */
+  /** Horizontal angle around the target in radians */
   public get azimuth(): number {
     return this.tempSpherical.setFromVector3(this.position).theta;
   }
 
-  /**
-   * Sets the distance of the sun from its target while maintaining current angles
-   * @param value - The new distance in world units
-   */
+  /** Set distance while keeping current angles */
   public set distance(value: number) {
     this.tempSpherical.setFromVector3(this.position);
     this.position.setFromSphericalCoords(
@@ -64,10 +47,7 @@ export class Sun extends DirectionalLight {
     );
   }
 
-  /**
-   * Sets the elevation angle of the sun while maintaining current distance and azimuth
-   * @param value - The new elevation in radians
-   */
+  /** Set elevation while keeping current distance and azimuth */
   public set elevation(value: number) {
     this.tempSpherical.setFromVector3(this.position);
     this.position.setFromSphericalCoords(
@@ -77,10 +57,7 @@ export class Sun extends DirectionalLight {
     );
   }
 
-  /**
-   * Sets the azimuth angle of the sun while maintaining current distance and elevation
-   * @param value - The new azimuth in radians
-   */
+  /** Set azimuth while keeping current distance and elevation */
   public set azimuth(value: number) {
     this.tempSpherical.setFromVector3(this.position);
     this.position.setFromSphericalCoords(
@@ -90,12 +67,7 @@ export class Sun extends DirectionalLight {
     );
   }
 
-  /**
-   * Configures the shadow camera's frustum to encompass the given bounding box
-   * This ensures that shadows are cast correctly for objects within the box
-   * 
-   * @param box3 - The bounding box to configure shadows for
-   */
+  /** Configure shadows to cover all corners of a bounding box */
   public setShadowMapFromBox3(box3: Box3): void {
     const camera = this.shadow.camera;
 
@@ -135,13 +107,7 @@ export class Sun extends DirectionalLight {
     camera.updateProjectionMatrix();
   }
 
-  /**
-   * Sets the sun's direction based on the brightest point in an HDR texture
-   * This is useful for matching the sun's position to an environment map
-   * 
-   * @param texture - The HDR texture to analyze (must be loaded and have valid image data)
-   * @param distance - Optional distance to position the sun from its target (default: 1)
-   */
+  /** Set light direction based on brightest point in an HDR texture */
   public setDirectionFromHDR(texture: Texture, distance = 1): void {
     const data = texture.image.data;
     const width = texture.image.width;
@@ -150,21 +116,22 @@ export class Sun extends DirectionalLight {
     let maxLuminance = 0;
     let maxIndex = 0;
 
-    // Find the brightest pixel in the HDR texture
-    const step = texture.format === RGBAFormat ? 4 : 3;
+    // Find brightest pixel
+
+    const step =
+      texture.format === RGBAFormat ? RGBA_CHANNEL_COUNT : RGB_CHANNEL_COUNT;
     for (let i = 0; i < data.length; i += step) {
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
-      // Calculate luminance using the Rec. 709 coefficients
-      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const luminance = LUMINANCE_R * r + LUMINANCE_G * g + LUMINANCE_B * b;
       if (luminance > maxLuminance) {
         maxLuminance = luminance;
         maxIndex = i;
       }
     }
 
-    // Convert pixel coordinates to spherical coordinates
+    // Convert to spherical coordinates
     const pixelIndex = maxIndex / step;
     const x = pixelIndex % width;
     const y = Math.floor(pixelIndex / width);
