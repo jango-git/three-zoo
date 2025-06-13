@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "zoo of tiny three js tools",
   "scripts": {
     "clean": "rm -rf dist",
@@ -33,7 +33,7 @@
   },
   "type": "module",
   "peerDependencies": {
-    "three": ">=0.176.0"
+    "three": ">=0.176.0 <1.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",
