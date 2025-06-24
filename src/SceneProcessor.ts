@@ -1,5 +1,6 @@
 import type { Material, Object3D } from "three";
 import { FrontSide, Mesh } from "three";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { InstanceAssembler } from "./InstanceAssembler";
 import { SceneTraversal } from "./SceneTraversal";
 
@@ -12,70 +13,65 @@ export interface SceneProcessorOptions {
   assembleInstances: boolean;
 
   /** Names matching these patterns will cast shadows */
-  castShadowExpressions: RegExp[];
+  castShadowRegExp: RegExp;
 
   /** Names matching these patterns will receive shadows */
-  receiveShadwoExpressions: RegExp[];
+  receiveShadowRegExp: RegExp;
 
   /** Names matching these patterns will be transparent */
-  transparentMaterialExpressions: RegExp[];
+  transparentMaterialRegExp: RegExp;
 
   /** Names matching these patterns won't write to depth buffer */
-  noDepthWriteMaterialExpressions: RegExp[];
+  noDepthWriteMaterialRegExp: RegExp;
+
+  /** Names matching these patterns will be alpha tested */
+  alphaTestMaterialRegExp: RegExp;
+
+  /** Names matching these patterns will be alpha hashed */
+  alphaHashMaterialRegExp: RegExp;
 }
 
 /** Post-processes a scene based on name patterns */
 export class SceneProcessor {
   /**
    * Process a scene to set up materials and shadows.
-   * 
-   * @param asset - Scene to process
+   *
+   * @param object - Scene to process
    * @param options - How to process the scene
    * @returns Processed scene root objects
    */
   public static process(
-    asset: Object3D,
+    object: Object3D,
     options: Partial<SceneProcessorOptions>,
   ): Object3D[] {
-    const container = options.cloneAsset !== false ? asset.clone() : asset;
+    const container = options.cloneAsset !== false ? clone(object) : object;
 
     if (options.assembleInstances !== false) {
       InstanceAssembler.assemble(container);
     }
 
     SceneTraversal.enumerateMaterials(container, (material: Material) => {
-      material.transparent = SceneProcessor.matchesAny(
-        material.name,
-        options.transparentMaterialExpressions,
+      material.transparent =
+        options.transparentMaterialRegExp?.test(material.name) ?? false;
+      material.depthWrite = !(
+        options.noDepthWriteMaterialRegExp?.test(material.name) ?? false
       );
-      material.depthWrite = !SceneProcessor.matchesAny(
-        material.name,
-        options.noDepthWriteMaterialExpressions,
-      );
+      material.alphaTest = options.alphaTestMaterialRegExp?.test(material.name)
+        ? 0.5
+        : 0;
+      material.alphaHash =
+        options.alphaHashMaterialRegExp?.test(material.name) ?? false;
       material.side = FrontSide;
       material.forceSinglePass = true;
       material.depthTest = true;
     });
 
     SceneTraversal.enumerateObjectsByType(container, Mesh, (child: Mesh) => {
-      child.castShadow = SceneProcessor.matchesAny(
-        child.name,
-        options.castShadowExpressions,
-      );
-      child.receiveShadow = SceneProcessor.matchesAny(
-        child.name,
-        options.receiveShadwoExpressions,
-      );
+      child.castShadow = options.castShadowRegExp?.test(child.name) ?? false;
+      child.receiveShadow =
+        options.receiveShadowRegExp?.test(child.name) ?? false;
     });
 
     return container.children;
-  }
-
-  /** Does the string match any of the patterns? */
-  private static matchesAny(
-    value: string,
-    expressions: RegExp[] = [],
-  ): boolean {
-    return expressions.some((p) => p.test(value));
   }
 }
