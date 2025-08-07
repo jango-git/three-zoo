@@ -1,4 +1,9 @@
-# 🦁 three-zoo
+<p align="center">
+  <h1 align="center">🦁 three-zoo</h1>
+  <p align="center">
+    A modest collection of Three.js utilities designed to simplify common 3D development tasks.
+  </p>
+</p>
 
 <p align="center">
 <a href="https://www.npmjs.com/package/three-zoo"><img src="https://img.shields.io/npm/v/three-zoo.svg" alt="npm version"></a>
@@ -8,117 +13,106 @@
 <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-%5E0.175.0-green" alt="Three.js"></a>
 </p>
 
-A modest collection of Three.js utilities designed to simplify common 3D development tasks.
+## Features
 
-## 📦 Install
+- 📷 **DualFovCamera** - Independent horizontal and vertical FOV control with auto-fitting
+- ☀️ **Sun** - Intuitive spherical positioning for directional lights with HDR integration
+- 🔍 **SceneTraversal** - Find and manipulate objects and materials in scene graphs
+- 🎭 **SkinnedMeshBaker** - Convert animated meshes to static geometry
+
+## Installation
 
 ```bash
 npm install three-zoo
 ```
 
-## 🎯 Overview
+## DualFovCamera
 
-**three-zoo** provides focused solutions for recurring challenges in 3D web development:
-
-- **Advanced camera controls** with independent FOV management and auto-fitting
-- **Intuitive lighting** with spherical positioning and HDR integration
-- **Scene graph utilities** for finding and manipulating objects and materials
-- **Animation baking** to convert skinned meshes to static geometry
-
-Each utility is designed to work seamlessly with existing Three.js workflows without imposing architectural constraints.
-
-## 🛠️ Tools
-
-### 📷 DualFovCamera
-
-Camera with independent horizontal and vertical field of view control, plus advanced fitting capabilities:
+Advanced camera with independent horizontal and vertical field of view:
 
 ```typescript
-const camera = new DualFovCamera(90, 60); // hFov, vFov
-camera.horizontalFov = 100; // Change horizontal FOV
-camera.verticalFov = 70;    // Change vertical FOV
+const camera = new DualFovCamera(90, 60);
 
-// Automatically adjust FOV to fit objects
+// Independent FOV control
+camera.horizontalFov = 100;
+camera.verticalFov = 70;
+
+// Auto-fit objects in view
 camera.fitVerticalFovToPoints(vertices);
 camera.fitVerticalFovToBox(boundingBox);
 camera.fitVerticalFovToMesh(skinnedMesh);
 
-// Point camera at mesh center of mass
+// Smart camera positioning
 camera.lookAtMeshCenterOfMass(skinnedMesh);
-
-// Get actual FOV after aspect ratio calculations
-const actualHFov = camera.getActualHorizontalFov();
-const actualVFov = camera.getActualVerticalFov();
 ```
 
-### ☀️ Sun
+## Sun
 
-Directional light with intuitive spherical positioning and automatic shadow configuration:
+Directional light with spherical positioning:
 
 ```typescript
 const sun = new Sun();
 
-// Spherical positioning
+// Spherical coordinates
 sun.elevation = Math.PI / 4;  // 45° above horizon
 sun.azimuth = Math.PI / 2;    // 90° rotation
 sun.distance = 100;           // Distance from origin
 
-// Automatically configure shadows for optimal coverage
+// Automatic shadow configuration
 sun.configureShadowsForBoundingBox(sceneBounds);
 
-// Position sun based on brightest point in HDR environment map
+// Position from HDR environment map
 sun.setDirectionFromHDRTexture(hdrTexture, 50);
 ```
 
-### 🔍 SceneTraversal
+## SceneTraversal
 
-Scene graph navigation and batch operations for finding and manipulating objects:
+Navigate and manipulate Three.js scene graphs:
 
 ```typescript
-// Find objects and materials by name
-const obj = SceneTraversal.getObjectByName(scene, 'player');
-const material = SceneTraversal.getMaterialByName(scene, 'metal');
+// Find by name
+const player = SceneTraversal.getObjectByName(scene, 'Player');
+const metal = SceneTraversal.getMaterialByName(scene, 'MetalMaterial');
 
-// Filter with patterns or custom functions
+// Filter with patterns
 const enemies = SceneTraversal.filterObjects(scene, /^enemy_/);
-const glassMaterials = SceneTraversal.filterMaterials(scene, /glass/i);
+const glassMats = SceneTraversal.filterMaterials(scene, /glass/i);
 
-// Find objects that use specific materials
-const meshesWithGlass = SceneTraversal.findMaterialUsers(scene, /glass/i);
+// Find material users
+const glassObjects = SceneTraversal.findMaterialUsers(scene, /glass/i);
 
-// Batch operations on specific object types
-SceneTraversal.enumerateObjectsByType(scene, Mesh, (mesh) => {
-  mesh.castShadow = true;
-});
-
-// Process all materials in the scene
+// Batch operations
 SceneTraversal.enumerateMaterials(scene, (material) => {
   if ('roughness' in material) material.roughness = 0.8;
 });
 ```
 
-### 🎭 SkinnedMeshBaker
+## SkinnedMeshBaker
 
-Converts animated skinned meshes to static geometry:
+Convert animated meshes to static geometry:
 
 ```typescript
-// Bake current pose to static mesh
+// Bake current pose
 const staticMesh = SkinnedMeshBaker.bakePose(skinnedMesh);
 
 // Bake specific animation frame
 const frameMesh = SkinnedMeshBaker.bakeAnimationFrame(
-  armature,        // Root object with bones
-  skinnedMesh,     // Mesh to bake
-  1.5,             // Time in seconds
-  animationClip    // Animation to sample
+  armature,
+  skinnedMesh,
+  1.5,              // Time in seconds
+  animationClip
 );
 ```
 
-## ⚡ Requirements
+## Requirements
 
-- Three.js >= 0.150.0
+- Three.js ^0.175.0 (peer dependency)
 - TypeScript support included
 
-## 📄 License
+## Contributing
 
-MIT
+Contributions are welcome! Please feel free to submit issues and pull requests.
+
+## License
+
+MIT © [jango](https://github.com/jango-git)
