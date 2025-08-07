@@ -1,14 +1,22 @@
-# three-zoo
+# 🦁 three-zoo
+
+<p align="center">
+<a href="https://www.npmjs.com/package/three-zoo"><img src="https://img.shields.io/npm/v/three-zoo.svg" alt="npm version"></a>
+<a href="https://bundlephobia.com/package/three-zoo"><img src="https://badgen.net/bundlephobia/min/three-zoo" alt="bundle size (min)"></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+<a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-%5E5.8.0-blue" alt="TypeScript"></a>
+<a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-%5E0.175.0-green" alt="Three.js"></a>
+</p>
 
 A modest collection of Three.js utilities designed to simplify common 3D development tasks.
 
-## Install
+## 📦 Install
 
 ```bash
 npm install three-zoo
 ```
 
-## Overview
+## 🎯 Overview
 
 **three-zoo** provides focused solutions for recurring challenges in 3D web development:
 
@@ -19,9 +27,9 @@ npm install three-zoo
 
 Each utility is designed to work seamlessly with existing Three.js workflows without imposing architectural constraints.
 
-## Tools
+## 🛠️ Tools
 
-### DualFovCamera
+### 📷 DualFovCamera
 
 Camera with independent horizontal and vertical field of view control, plus advanced fitting capabilities:
 
@@ -43,7 +51,7 @@ const actualHFov = camera.getActualHorizontalFov();
 const actualVFov = camera.getActualVerticalFov();
 ```
 
-### Sun
+### ☀️ Sun
 
 Directional light with intuitive spherical positioning and automatic shadow configuration:
 
@@ -62,7 +70,7 @@ sun.configureShadowsForBoundingBox(sceneBounds);
 sun.setDirectionFromHDRTexture(hdrTexture, 50);
 ```
 
-### SceneTraversal
+### 🔍 SceneTraversal
 
 Scene graph navigation and batch operations for finding and manipulating objects:
 
@@ -89,7 +97,7 @@ SceneTraversal.enumerateMaterials(scene, (material) => {
 });
 ```
 
-### SkinnedMeshBaker
+### 🎭 SkinnedMeshBaker
 
 Converts animated skinned meshes to static geometry:
 
@@ -106,11 +114,11 @@ const frameMesh = SkinnedMeshBaker.bakeAnimationFrame(
 );
 ```
 
-## Requirements
+## ⚡ Requirements
 
 - Three.js >= 0.150.0
 - TypeScript support included
 
-## License
+## 📄 License
 
 MIT
