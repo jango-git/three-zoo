@@ -1,16 +1,27 @@
 import type { Texture } from "three";
 import { Box3, DirectionalLight, RGBAFormat, Spherical, Vector3 } from "three";
 
+/** Number of color channels in RGBA format */
 const RGBA_CHANNEL_COUNT = 4;
+/** Number of color channels in RGB format */
 const RGB_CHANNEL_COUNT = 3;
 
+/** Red channel weight for luminance calculation (ITU-R BT.709) */
 const LUMINANCE_R = 0.2126;
+/** Green channel weight for luminance calculation (ITU-R BT.709) */
 const LUMINANCE_G = 0.7152;
+/** Blue channel weight for luminance calculation (ITU-R BT.709) */
 const LUMINANCE_B = 0.0722;
 
-/** A directional light with spherical positioning controls */
+/**
+ * A directional light with spherical positioning controls and advanced shadow mapping.
+ *
+ * Extends Three.js DirectionalLight to provide intuitive spherical coordinate control
+ * (distance, elevation, azimuth) and automatic shadow map configuration for bounding boxes.
+ * Also supports automatic sun direction calculation from HDR environment maps.
+ */
 export class Sun extends DirectionalLight {
-  /** Internal vectors to avoid garbage collection */
+  /** Internal vectors to avoid garbage collection during calculations */
   private readonly tempVector3D0 = new Vector3();
   private readonly tempVector3D1 = new Vector3();
   private readonly tempVector3D2 = new Vector3();
@@ -22,22 +33,38 @@ export class Sun extends DirectionalLight {
   private readonly tempBox3 = new Box3();
   private readonly tempSpherical = new Spherical();
 
-  /** Distance from the light to its target */
+  /**
+   * Gets the distance from the light to its target (origin).
+   *
+   * @returns The distance in world units
+   */
   public get distance(): number {
     return this.position.length();
   }
 
-  /** Vertical angle from the ground in radians */
+  /**
+   * Gets the elevation angle (vertical angle from the horizontal plane).
+   *
+   * @returns The elevation angle in radians (0 = horizontal, π/2 = directly above)
+   */
   public get elevation(): number {
     return this.tempSpherical.setFromVector3(this.position).phi;
   }
 
-  /** Horizontal angle around the target in radians */
+  /**
+   * Gets the azimuth angle (horizontal rotation around the target).
+   *
+   * @returns The azimuth angle in radians (0 = positive X axis, π/2 = positive Z axis)
+   */
   public get azimuth(): number {
     return this.tempSpherical.setFromVector3(this.position).theta;
   }
 
-  /** Set distance while keeping current angles */
+  /**
+   * Sets the distance while preserving current elevation and azimuth angles.
+   *
+   * @param value - The new distance in world units
+   */
   public set distance(value: number) {
     this.tempSpherical.setFromVector3(this.position);
     this.position.setFromSphericalCoords(
@@ -47,7 +74,11 @@ export class Sun extends DirectionalLight {
     );
   }
 
-  /** Set elevation while keeping current distance and azimuth */
+  /**
+   * Sets the elevation angle while preserving current distance and azimuth.
+   *
+   * @param value - The new elevation angle in radians (0 = horizontal, π/2 = directly above)
+   */
   public set elevation(value: number) {
     this.tempSpherical.setFromVector3(this.position);
     this.position.setFromSphericalCoords(
@@ -57,7 +88,11 @@ export class Sun extends DirectionalLight {
     );
   }
 
-  /** Set azimuth while keeping current distance and elevation */
+  /**
+   * Sets the azimuth angle while preserving current distance and elevation.
+   *
+   * @param value - The new azimuth angle in radians (0 = positive X axis, π/2 = positive Z axis)
+   */
   public set azimuth(value: number) {
     this.tempSpherical.setFromVector3(this.position);
     this.position.setFromSphericalCoords(
@@ -67,8 +102,16 @@ export class Sun extends DirectionalLight {
     );
   }
 
-  /** Configure shadows to cover all corners of a bounding box */
-  public setShadowMapFromBox3(box3: Box3): void {
+  /**
+   * Configures the shadow camera to optimally cover a bounding box.
+   *
+   * This method automatically adjusts the directional light's shadow camera frustum
+   * to perfectly encompass the provided bounding box, ensuring efficient shadow map
+   * usage and eliminating shadow clipping issues.
+   *
+   * @param box3 - The 3D bounding box to cover with shadows
+   */
+  public configureShadowsForBoundingBox(box3: Box3): void {
     const camera = this.shadow.camera;
 
     this.target.updateWorldMatrix(true, false);
@@ -107,8 +150,17 @@ export class Sun extends DirectionalLight {
     camera.updateProjectionMatrix();
   }
 
-  /** Set light direction based on brightest point in an HDR texture */
-  public setDirectionFromHDR(texture: Texture, distance = 1): void {
+  /**
+   * Sets the sun's direction based on the brightest point in an HDR environment map.
+   *
+   * This method analyzes an HDR texture to find the pixel with the highest luminance
+   * value and positions the sun to shine from that direction. This is useful for
+   * creating realistic lighting that matches HDR environment maps.
+   *
+   * @param texture - The HDR texture to analyze (must have image data available)
+   * @param distance - The distance to place the sun from the origin (defaults to 1)
+   */
+  public setDirectionFromHDRTexture(texture: Texture, distance = 1): void {
     const data = texture.image.data;
     const width = texture.image.width;
     const height = texture.image.height;
