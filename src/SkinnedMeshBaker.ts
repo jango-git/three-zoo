@@ -9,7 +9,7 @@ export class SkinnedMeshBaker {
   /**
    * Convert a skinned mesh to a regular mesh in its current pose.
    * The resulting mesh will have no bones but look identical.
-   * 
+   *
    * @param skinnedMesh - Mesh to convert
    * @returns Static mesh with baked vertex positions
    */
@@ -42,7 +42,7 @@ export class SkinnedMeshBaker {
 
   /**
    * Bake a single frame from an animation into a static mesh.
-   * 
+   *
    * @param armature - Root object with bones (usually from GLTF)
    * @param skinnedMesh - Mesh to convert
    * @param timeOffset - Time in seconds within the animation

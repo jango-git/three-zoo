@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Some reusable bits for building things with Three.js ",
   "scripts": {
     "clean": "rm -rf dist",

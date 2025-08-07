@@ -19,6 +19,8 @@
 - ☀️ **Sun** - Intuitive spherical positioning for directional lights with HDR integration
 - 🔍 **SceneTraversal** - Find and manipulate objects and materials in scene graphs
 - 🎭 **SkinnedMeshBaker** - Convert animated meshes to static geometry
+- 🎨 **StandardToLambertConverter** - Convert PBR materials to Lambert with visual compensation
+- ✨ **StandardToBasicConverter** - Convert PBR materials to unlit Basic materials
 
 ## Installation
 
@@ -102,6 +104,39 @@ const frameMesh = SkinnedMeshBaker.bakeAnimationFrame(
   1.5,              // Time in seconds
   animationClip
 );
+```
+
+## Material Converters
+
+Convert PBR StandardMaterials to simpler material types while preserving visual appearance:
+
+### StandardToLambertConverter
+
+```typescript
+// Basic conversion
+const lambertMaterial = StandardToLambertConverter.convert(standardMaterial);
+
+// With custom options
+const lambertMaterial = StandardToLambertConverter.convert(standardMaterial, {
+  preserveName: true,
+  roughnessColorFactor: 0.9,
+  disposeOriginal: true
+});
+```
+
+### StandardToBasicConverter
+
+```typescript
+// Convert to unlit material
+const basicMaterial = StandardToBasicConverter.convert(standardMaterial);
+
+// With brightness compensation
+const basicMaterial = StandardToBasicConverter.convert(standardMaterial, {
+  brightnessFactor: 1.5,
+  combineEmissive: true,
+  preserveName: true,
+  disposeOriginal: false
+});
 ```
 
 ## Requirements
