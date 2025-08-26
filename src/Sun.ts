@@ -14,11 +14,11 @@ const LUMINANCE_G = 0.7152;
 const LUMINANCE_B = 0.0722;
 
 /**
- * A directional light with spherical positioning controls and advanced shadow mapping.
+ * A directional light with spherical positioning controls.
  *
- * Extends Three.js DirectionalLight to provide intuitive spherical coordinate control
- * (distance, elevation, azimuth) and automatic shadow map configuration for bounding boxes.
- * Also supports automatic sun direction calculation from HDR environment maps.
+ * Extends Three.js DirectionalLight to provide spherical coordinate control
+ * (distance, elevation, azimuth) and shadow map configuration for bounding boxes.
+ * Also supports sun direction calculation from HDR environment maps.
  */
 export class Sun extends DirectionalLight {
   /** Internal vectors to avoid garbage collection during calculations */
@@ -34,7 +34,7 @@ export class Sun extends DirectionalLight {
   private readonly tempSpherical = new Spherical();
 
   /**
-   * Gets the distance from the light to its target (origin).
+   * Gets the distance from the light's position to the origin.
    *
    * @returns The distance in world units
    */
@@ -43,18 +43,18 @@ export class Sun extends DirectionalLight {
   }
 
   /**
-   * Gets the elevation angle (vertical angle from the horizontal plane).
+   * Gets the elevation angle from the spherical coordinates.
    *
-   * @returns The elevation angle in radians (0 = horizontal, π/2 = directly above)
+   * @returns The elevation angle in radians (phi angle from Three.js Spherical coordinates)
    */
   public get elevation(): number {
     return this.tempSpherical.setFromVector3(this.position).phi;
   }
 
   /**
-   * Gets the azimuth angle (horizontal rotation around the target).
+   * Gets the azimuth angle from the spherical coordinates.
    *
-   * @returns The azimuth angle in radians (0 = positive X axis, π/2 = positive Z axis)
+   * @returns The azimuth angle in radians (theta angle from Three.js Spherical coordinates)
    */
   public get azimuth(): number {
     return this.tempSpherical.setFromVector3(this.position).theta;
@@ -77,7 +77,7 @@ export class Sun extends DirectionalLight {
   /**
    * Sets the elevation angle while preserving current distance and azimuth.
    *
-   * @param value - The new elevation angle in radians (0 = horizontal, π/2 = directly above)
+   * @param value - The new elevation angle in radians (phi angle for Three.js Spherical coordinates)
    */
   public set elevation(value: number) {
     this.tempSpherical.setFromVector3(this.position);
@@ -91,7 +91,7 @@ export class Sun extends DirectionalLight {
   /**
    * Sets the azimuth angle while preserving current distance and elevation.
    *
-   * @param value - The new azimuth angle in radians (0 = positive X axis, π/2 = positive Z axis)
+   * @param value - The new azimuth angle in radians (theta angle for Three.js Spherical coordinates)
    */
   public set azimuth(value: number) {
     this.tempSpherical.setFromVector3(this.position);
@@ -103,11 +103,11 @@ export class Sun extends DirectionalLight {
   }
 
   /**
-   * Configures the shadow camera to optimally cover a bounding box.
+   * Configures the shadow camera frustum to cover a bounding box.
    *
-   * This method automatically adjusts the directional light's shadow camera frustum
-   * to perfectly encompass the provided bounding box, ensuring efficient shadow map
-   * usage and eliminating shadow clipping issues.
+   * Adjusts the directional light's shadow camera frustum to encompass the
+   * provided bounding box by transforming box corners to light space and
+   * setting camera bounds accordingly.
    *
    * @param box3 - The 3D bounding box to cover with shadows
    */
@@ -153,12 +153,11 @@ export class Sun extends DirectionalLight {
   /**
    * Sets the sun's direction based on the brightest point in an HDR environment map.
    *
-   * This method analyzes an HDR texture to find the pixel with the highest luminance
-   * value and positions the sun to shine from that direction. This is useful for
-   * creating realistic lighting that matches HDR environment maps.
+   * Analyzes an HDR texture to find the pixel with the highest luminance value
+   * and positions the sun to shine from that direction using spherical coordinates.
    *
    * @param texture - The HDR texture to analyze (must have image data available)
-   * @param distance - The distance to place the sun from the origin (defaults to 1)
+   * @param distance - The distance to place the sun from the origin
    */
   public setDirectionFromHDRTexture(texture: Texture, distance = 1): void {
     const data = texture.image.data;

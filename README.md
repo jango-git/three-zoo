@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">🦁 three-zoo</h1>
   <p align="center">
-    A modest collection of Three.js utilities designed to simplify common 3D development tasks.
+    A small collection of Three.js utilities I use in my daily work with 3D development.
   </p>
 </p>
 
@@ -13,14 +13,14 @@
 <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-%5E0.175.0-green" alt="Three.js"></a>
 </p>
 
-## Features
+## What's included
 
-- 📷 **DualFovCamera** - Independent horizontal and vertical FOV control with auto-fitting
-- ☀️ **Sun** - Intuitive spherical positioning for directional lights with HDR integration
-- 🔍 **SceneTraversal** - Find and manipulate objects and materials in scene graphs
-- 🎭 **SkinnedMeshBaker** - Convert animated meshes to static geometry
-- 🎨 **StandardToLambertConverter** - Convert PBR materials to Lambert with visual compensation
-- ✨ **StandardToBasicConverter** - Convert PBR materials to unlit Basic materials
+- 📷 **DualFovCamera** - Camera with separate horizontal and vertical FOV controls
+- ☀️ **Sun** - Directional light with spherical positioning
+- 🔍 **SceneTraversal** - Helper functions for finding objects and materials in scenes
+- 🎭 **SkinnedMeshBaker** - Converts animated meshes to static geometry
+- 🎨 **StandardToLambertConverter** - Converts PBR materials to Lambert materials
+- ✨ **StandardToBasicConverter** - Converts PBR materials to Basic materials
 
 ## Installation
 
@@ -30,60 +30,60 @@ npm install three-zoo
 
 ## DualFovCamera
 
-Advanced camera with independent horizontal and vertical field of view:
+A camera that lets you control horizontal and vertical field of view separately:
 
 ```typescript
 const camera = new DualFovCamera(90, 60);
 
-// Independent FOV control
+// Set FOV values independently
 camera.horizontalFov = 100;
 camera.verticalFov = 70;
 
-// Auto-fit objects in view
+// Fit objects in view
 camera.fitVerticalFovToPoints(vertices);
 camera.fitVerticalFovToBox(boundingBox);
 camera.fitVerticalFovToMesh(skinnedMesh);
 
-// Smart camera positioning
+// Position camera based on mesh center
 camera.lookAtMeshCenterOfMass(skinnedMesh);
 ```
 
 ## Sun
 
-Directional light with spherical positioning:
+A directional light with spherical positioning:
 
 ```typescript
 const sun = new Sun();
 
-// Spherical coordinates
+// Position using spherical coordinates
 sun.elevation = Math.PI / 4;  // 45° above horizon
 sun.azimuth = Math.PI / 2;    // 90° rotation
 sun.distance = 100;           // Distance from origin
 
-// Automatic shadow configuration
+// Set up shadows for a bounding box
 sun.configureShadowsForBoundingBox(sceneBounds);
 
-// Position from HDR environment map
+// Position based on HDR environment map
 sun.setDirectionFromHDRTexture(hdrTexture, 50);
 ```
 
 ## SceneTraversal
 
-Navigate and manipulate Three.js scene graphs:
+Functions for working with Three.js scene graphs:
 
 ```typescript
 // Find by name
 const player = SceneTraversal.getObjectByName(scene, 'Player');
 const metal = SceneTraversal.getMaterialByName(scene, 'MetalMaterial');
 
-// Filter with patterns
+// Find with patterns
 const enemies = SceneTraversal.filterObjects(scene, /^enemy_/);
 const glassMats = SceneTraversal.filterMaterials(scene, /glass/i);
 
-// Find material users
+// Find objects using specific materials
 const glassObjects = SceneTraversal.findMaterialUsers(scene, /glass/i);
 
-// Batch operations
+// Process all materials in a scene
 SceneTraversal.enumerateMaterials(scene, (material) => {
   if ('roughness' in material) material.roughness = 0.8;
 });
@@ -108,7 +108,7 @@ const frameMesh = SkinnedMeshBaker.bakeAnimationFrame(
 
 ## Material Converters
 
-Convert PBR StandardMaterials to simpler material types while preserving visual appearance:
+Convert PBR materials to simpler types. Useful for performance optimization:
 
 ### StandardToLambertConverter
 
@@ -116,7 +116,7 @@ Convert PBR StandardMaterials to simpler material types while preserving visual 
 // Basic conversion
 const lambertMaterial = StandardToLambertConverter.convert(standardMaterial);
 
-// With custom options
+// With options
 const lambertMaterial = StandardToLambertConverter.convert(standardMaterial, {
   preserveName: true,
   roughnessColorFactor: 0.9,
@@ -130,7 +130,7 @@ const lambertMaterial = StandardToLambertConverter.convert(standardMaterial, {
 // Convert to unlit material
 const basicMaterial = StandardToBasicConverter.convert(standardMaterial);
 
-// With brightness compensation
+// With brightness adjustment
 const basicMaterial = StandardToBasicConverter.convert(standardMaterial, {
   brightnessFactor: 1.5,
   combineEmissive: true,
@@ -146,7 +146,7 @@ const basicMaterial = StandardToBasicConverter.convert(standardMaterial, {
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+Feel free to submit issues and pull requests if you find these utilities helpful.
 
 ## License
 

@@ -2,10 +2,10 @@ import type { Material, Object3D } from "three";
 import { Mesh } from "three";
 
 /**
- * Constructor type for type-safe scene traversal operations.
+ * Constructor type for scene traversal operations.
  *
- * This type represents any constructor function that can be used to create instances of type T.
- * It's used for runtime type checking when filtering objects by their constructor type.
+ * Represents a constructor function that creates instances of type T.
+ * Used for runtime type checking when filtering objects by constructor type.
  *
  * @template T - The type that the constructor creates
  */
@@ -14,25 +14,23 @@ export type Constructor<T> = abstract new (...args: never[]) => T;
 /**
  * Utility class for finding and modifying objects in a Three.js scene graph.
  *
- * This class provides static methods for traversing Three.js scene hierarchies,
- * searching for specific objects or materials, and performing batch operations
- * on collections of scene objects.
+ * Provides static methods for traversing Three.js scene hierarchies,
+ * searching for objects or materials, and performing batch operations.
  *
- * All methods perform depth-first traversal of the scene graph starting from
- * the provided root object and recursively processing all children.
+ * All methods perform depth-first traversal starting from the provided
+ * root object and recursively processing all children.
  */
 export class SceneTraversal {
   /**
    * Finds the first object in the scene hierarchy with an exact name match.
    *
-   * Performs a depth-first search through the scene graph starting from the provided
-   * root object. Returns the first object encountered whose name property exactly
-   * matches the search string.
+   * Performs depth-first search through the scene graph starting from the
+   * root object. Returns the first object whose name property matches
+   * the search string.
    *
    * @param object - The root Object3D to start searching from
    * @param name - The exact name to search for (case-sensitive)
    * @returns The first matching Object3D, or null if no match is found
-
    */
   public static getObjectByName(
     object: Object3D,
@@ -55,15 +53,13 @@ export class SceneTraversal {
   /**
    * Finds the first material in the scene hierarchy with an exact name match.
    *
-   * Performs a depth-first search through the scene graph, examining materials
+   * Performs depth-first search through the scene graph, examining materials
    * attached to Mesh objects. Handles both single materials and material arrays.
-   * Returns the first material encountered whose name property exactly matches
-   * the search string.
+   * Returns the first material whose name property matches the search string.
    *
    * @param object - The root Object3D to start searching from
    * @param name - The exact material name to search for (case-sensitive)
    * @returns The first matching Material, or null if no match is found
-
    */
   public static getMaterialByName(
     object: Object3D,
@@ -94,15 +90,13 @@ export class SceneTraversal {
   /**
    * Processes all objects of a specific type in the scene hierarchy.
    *
-   * Performs a depth-first traversal and executes the provided callback function
-   * for every object that is an instance of the specified type. This is useful
-   * for batch operations on specific object types (e.g., all lights, all meshes, etc.).
+   * Performs depth-first traversal and executes the callback function
+   * for every object that is an instance of the specified type.
    *
    * @template T - The type of objects to process
    * @param object - The root Object3D to start searching from
    * @param type - The constructor/class to filter by (e.g., DirectionalLight, Mesh)
    * @param callback - Function to execute for each matching object instance
-
    */
   public static enumerateObjectsByType<T>(
     object: Object3D,
@@ -121,13 +115,12 @@ export class SceneTraversal {
   /**
    * Processes all materials found in mesh objects within the scene hierarchy.
    *
-   * Performs a depth-first traversal, finding all Mesh objects and executing
-   * the provided callback function for each material. Handles both single
-   * materials and material arrays properly.
+   * Performs depth-first traversal, finding all Mesh objects and executing
+   * the callback function for each material. Handles both single
+   * materials and material arrays.
    *
    * @param object - The root Object3D to start searching from
    * @param callback - Function to execute for each material found
-
    */
   public static enumerateMaterials(
     object: Object3D,
@@ -149,16 +142,15 @@ export class SceneTraversal {
   }
 
   /**
-   * Finds all objects in the scene hierarchy that match the specified filter criteria.
+   * Finds all objects in the scene hierarchy that match filter criteria.
    *
-   * Performs a depth-first search and collects all objects that either match
-   * a regular expression pattern (applied to the object's name) or satisfy
-   * a custom predicate function.
+   * Performs depth-first search and collects all objects that either match
+   * a regular expression pattern (applied to object names) or satisfy
+   * a predicate function.
    *
    * @param object - The root Object3D to start searching from
    * @param filter - Either a RegExp to test against object names, or a predicate function
    * @returns Array of all matching Object3D instances
-
    */
   public static filterObjects(
     object: Object3D,
@@ -184,16 +176,15 @@ export class SceneTraversal {
   }
 
   /**
-   * Finds all materials in the scene hierarchy whose names match a regular expression pattern.
+   * Finds all materials in the scene hierarchy whose names match a pattern.
    *
-   * Performs a depth-first search through all Mesh objects and collects materials
-   * whose name property matches the provided regular expression. Handles both
-   * single materials and material arrays properly.
+   * Performs depth-first search through all Mesh objects and collects materials
+   * whose name property matches the regular expression. Handles both
+   * single materials and material arrays.
    *
    * @param object - The root Object3D to start searching from
    * @param name - Regular expression pattern to test against material names
    * @returns Array of all matching Material instances
-
    */
   public static filterMaterials(object: Object3D, name: RegExp): Material[] {
     let result: Material[] = [];
@@ -201,12 +192,15 @@ export class SceneTraversal {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
         for (const material of object.material) {
-          if (material.name && name.test(material.name)) {
+          if (material.name !== undefined && name.test(material.name)) {
             result.push(material);
           }
         }
       } else {
-        if (object.material.name && name.test(object.material.name)) {
+        if (
+          object.material.name !== undefined &&
+          name.test(object.material.name)
+        ) {
           result.push(object.material);
         }
       }
@@ -220,11 +214,10 @@ export class SceneTraversal {
   }
 
   /**
-   * Finds all objects (mesh users) that use materials with names matching a regular expression pattern.
+   * Finds all mesh objects that use materials with names matching a pattern.
    *
-   * Performs a depth-first search through all Mesh objects and collects the mesh objects
-   * whose materials have names that match the provided regular expression. This is useful
-   * for finding all objects that use specific material types or naming patterns.
+   * Performs depth-first search through all Mesh objects and collects mesh objects
+   * whose materials have names that match the regular expression.
    *
    * @param object - The root Object3D to start searching from
    * @param materialName - Regular expression pattern to test against material names
@@ -241,13 +234,16 @@ export class SceneTraversal {
 
       if (Array.isArray(object.material)) {
         for (const material of object.material) {
-          if (material.name && materialName.test(material.name)) {
+          if (material.name !== undefined && materialName.test(material.name)) {
             hasMatchingMaterial = true;
             break;
           }
         }
       } else {
-        if (object.material.name && materialName.test(object.material.name)) {
+        if (
+          object.material.name !== undefined &&
+          materialName.test(object.material.name)
+        ) {
           hasMatchingMaterial = true;
         }
       }

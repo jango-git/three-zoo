@@ -1,10 +1,13 @@
 import type { MeshStandardMaterial } from "three";
 import { MeshBasicMaterial } from "three";
 
+/** Factor for metalness brightness adjustment */
+const METALNESS_BRIGHTNESS_FACTOR = 0.3;
+/** Factor for emissive color contribution when combining with base color */
+const EMISSIVE_CONTRIBUTION_FACTOR = 0.5;
+
 /**
- * Configuration options for the StandardToBasicConverter
- *
- * @interface StandardToBasicConverterOptions
+ * Configuration options for the StandardToBasicConverter.
  */
 export interface StandardToBasicConverterOptions {
   /**
@@ -35,20 +38,18 @@ export interface StandardToBasicConverterOptions {
 }
 
 /**
- * Converts Three.js MeshStandardMaterial to MeshBasicMaterial
+ * Converts Three.js MeshStandardMaterial to MeshBasicMaterial.
  *
- * This converter handles the translation from PBR (Physically Based Rendering)
- * StandardMaterial to the unlit BasicMaterial. Since BasicMaterial doesn't respond
- * to lighting, this converter applies various compensation techniques to maintain
- * visual similarity, including brightness adjustments and emissive color combination.
+ * Handles translation from PBR StandardMaterial to unlit BasicMaterial.
+ * Since BasicMaterial doesn't respond to lighting, applies compensation
+ * techniques including brightness adjustments and emissive color combination.
  */
 export class StandardToBasicConverter {
   /**
-   * Converts a MeshStandardMaterial to MeshBasicMaterial
+   * Converts a MeshStandardMaterial to MeshBasicMaterial.
    *
-   * This method performs a comprehensive conversion from PBR StandardMaterial to
-   * unlit BasicMaterial while attempting to preserve visual similarity through
-   * brightness compensation and intelligent property mapping.
+   * Performs conversion from PBR StandardMaterial to unlit BasicMaterial
+   * with brightness compensation and property mapping.
    *
    * @param standardMaterial - The source MeshStandardMaterial to convert
    * @param options - Configuration options for the conversion
@@ -68,8 +69,6 @@ export class StandardToBasicConverter {
    *   combineEmissive: true
    * });
    * ```
-   *
-   * @see {@link StandardToBasicConverterOptions} for available configuration options
    */
   public static convert(
     standardMaterial: MeshStandardMaterial,
@@ -109,10 +108,7 @@ export class StandardToBasicConverter {
   }
 
   /**
-   * Copies basic material properties from source to target material
-   *
-   * Transfers common material properties including rendering settings,
-   * visibility, fog interaction, wireframe settings, and user data.
+   * Copies basic material properties from source to target material.
    *
    * @param source - The source MeshStandardMaterial
    * @param target - The target MeshBasicMaterial
@@ -141,11 +137,10 @@ export class StandardToBasicConverter {
   }
 
   /**
-   * Converts color-related properties with lighting compensation
+   * Converts color-related properties with lighting compensation.
    *
    * Applies brightness compensation and optional emissive color combination
-   * to account for BasicMaterial's lack of lighting response. Metallic materials
-   * receive additional brightness adjustment, and colors are clamped to valid ranges.
+   * to account for BasicMaterial's lack of lighting response.
    *
    * @param source - The source MeshStandardMaterial
    * @param target - The target MeshBasicMaterial
@@ -165,7 +160,8 @@ export class StandardToBasicConverter {
 
     // Adjust for metalness - metallic materials tend to be darker without lighting
     if (source.metalness > 0) {
-      const metalnessBrightness = 1 + source.metalness * 0.3;
+      const metalnessBrightness =
+        1 + source.metalness * METALNESS_BRIGHTNESS_FACTOR;
       target.color.multiplyScalar(metalnessBrightness);
     }
 
@@ -173,7 +169,9 @@ export class StandardToBasicConverter {
     if (config.combineEmissive) {
       const emissiveContribution = source.emissive
         .clone()
-        .multiplyScalar(source.emissiveIntensity * 0.5);
+        .multiplyScalar(
+          source.emissiveIntensity * EMISSIVE_CONTRIBUTION_FACTOR,
+        );
       target.color.add(emissiveContribution);
     }
 
@@ -184,12 +182,10 @@ export class StandardToBasicConverter {
   }
 
   /**
-   * Converts and maps texture properties from Standard to Basic material
+   * Converts and maps texture properties from Standard to Basic material.
    *
-   * Handles the transfer of compatible texture maps including diffuse, alpha,
-   * environment, light, and AO maps. The metalness map is repurposed as a
-   * specular map for some reflective effect, and environment map reflectivity
-   * is set based on the original material's metalness value.
+   * Transfers compatible texture maps including diffuse, alpha, environment,
+   * light, and AO maps.
    *
    * @param source - The source MeshStandardMaterial
    * @param target - The target MeshBasicMaterial
@@ -239,10 +235,7 @@ export class StandardToBasicConverter {
   }
 
   /**
-   * Copies UV transformation properties for texture maps
-   *
-   * Transfers UV offset, repeat, rotation, and center properties from the
-   * source material's main texture map to the target material's map.
+   * Copies UV transformation properties for texture maps.
    *
    * @param source - The source MeshStandardMaterial
    * @param target - The target MeshBasicMaterial
@@ -262,10 +255,7 @@ export class StandardToBasicConverter {
   }
 
   /**
-   * Converts transparency and rendering properties
-   *
-   * Transfers transparency, opacity, alpha testing, depth testing,
-   * depth writing, and blending mode settings from source to target.
+   * Converts transparency and rendering properties.
    *
    * @param source - The source MeshStandardMaterial
    * @param target - The target MeshBasicMaterial

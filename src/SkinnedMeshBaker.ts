@@ -4,11 +4,11 @@ import { AnimationMixer, BufferAttribute, Mesh, Vector3 } from "three";
 /** Number of components per vertex */
 const COMPONENT_COUNT = 3;
 
-/** Convert skinned meshes to regular static meshes */
+/** Converts skinned meshes to static meshes */
 export class SkinnedMeshBaker {
   /**
-   * Convert a skinned mesh to a regular mesh in its current pose.
-   * The resulting mesh will have no bones but look identical.
+   * Converts a skinned mesh to a static mesh in its current pose.
+   * The resulting mesh has no bones but looks identical.
    *
    * @param skinnedMesh - Mesh to convert
    * @returns Static mesh with baked vertex positions
@@ -41,9 +41,9 @@ export class SkinnedMeshBaker {
   }
 
   /**
-   * Bake a single frame from an animation into a static mesh.
+   * Bakes a single frame from an animation into a static mesh.
    *
-   * @param armature - Root object with bones (usually from GLTF)
+   * @param armature - Root object with bones
    * @param skinnedMesh - Mesh to convert
    * @param timeOffset - Time in seconds within the animation
    * @param clip - Animation to get the pose from
