@@ -18,9 +18,7 @@ const MIN_FOV = 1;
 const MAX_FOV = 179;
 
 /**
- * A camera that supports independent horizontal and vertical FOV settings.
- * Extends Three.js PerspectiveCamera to allow separate control over horizontal
- * and vertical fields of view.
+ * Camera with independent horizontal and vertical FOV settings.
  */
 export class DualFovCamera extends PerspectiveCamera {
   /** Internal storage for horizontal field of view in degrees */
@@ -29,13 +27,11 @@ export class DualFovCamera extends PerspectiveCamera {
   private verticalFovInternal: number;
 
   /**
-   * Creates a new DualFovCamera instance.
-   *
-   * @param horizontalFov - Horizontal field of view in degrees. Clamped between 1° and 179°.
-   * @param verticalFov - Vertical field of view in degrees. Clamped between 1° and 179°.
-   * @param aspect - Camera aspect ratio (width/height).
-   * @param near - Near clipping plane distance.
-   * @param far - Far clipping plane distance.
+   * @param horizontalFov - Horizontal FOV in degrees (clamped 1-179°)
+   * @param verticalFov - Vertical FOV in degrees (clamped 1-179°)
+   * @param aspect - Aspect ratio (width/height)
+   * @param near - Near clipping plane distance
+   * @param far - Far clipping plane distance
    */
   constructor(
     horizontalFov = DEFAULT_HORIZONTAL_FOV,
@@ -51,27 +47,21 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Gets the horizontal field of view in degrees.
-   *
-   * @returns The horizontal FOV value
+   * @returns Horizontal FOV in degrees
    */
   public get horizontalFov(): number {
     return this.horizontalFovInternal;
   }
 
   /**
-   * Gets the vertical field of view in degrees.
-   *
-   * @returns The vertical FOV value
+   * @returns Vertical FOV in degrees
    */
   public get verticalFov(): number {
     return this.verticalFovInternal;
   }
 
   /**
-   * Sets the horizontal field of view in degrees.
-   *
-   * @param value - The horizontal FOV value in degrees. Clamped between 1° and 179°.
+   * @param value - Horizontal FOV in degrees (clamped 1-179°)
    */
   public set horizontalFov(value: number) {
     this.horizontalFovInternal = MathUtils.clamp(value, MIN_FOV, MAX_FOV);
@@ -79,9 +69,7 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Sets the vertical field of view in degrees.
-   *
-   * @param value - The vertical FOV value in degrees. Clamped between 1° and 179°.
+   * @param value - Vertical FOV in degrees (clamped 1-179°)
    */
   public set verticalFov(value: number) {
     this.verticalFovInternal = MathUtils.clamp(value, MIN_FOV, MAX_FOV);
@@ -89,10 +77,10 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Sets both horizontal and vertical field of view values.
+   * Sets both FOV values.
    *
-   * @param horizontal - Horizontal FOV in degrees. Clamped between 1° and 179°.
-   * @param vertical - Vertical FOV in degrees. Clamped between 1° and 179°.
+   * @param horizontal - Horizontal FOV in degrees (clamped 1-179°)
+   * @param vertical - Vertical FOV in degrees (clamped 1-179°)
    */
   public setFov(horizontal: number, vertical: number): void {
     this.horizontalFovInternal = MathUtils.clamp(horizontal, MIN_FOV, MAX_FOV);
@@ -101,9 +89,9 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Copies the field of view settings from another DualFovCamera.
+   * Copies FOV settings from another DualFovCamera.
    *
-   * @param source - The DualFovCamera to copy FOV settings from.
+   * @param source - Source camera to copy from
    */
   public copyFovSettings(source: DualFovCamera): void {
     this.horizontalFovInternal = source.horizontalFov;
@@ -112,13 +100,10 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Updates the projection matrix based on current FOV settings and aspect ratio.
+   * Updates projection matrix based on FOV and aspect ratio.
    *
-   * The behavior differs based on orientation:
-   * - **Landscape mode (aspect > 1)**: Preserves horizontal FOV, calculates vertical FOV
-   * - **Portrait mode (aspect ≤ 1)**: Preserves vertical FOV, calculates horizontal FOV
-   *
-   * Called when FOV values or aspect ratio changes.
+   * Landscape (aspect > 1): preserves horizontal FOV.
+   * Portrait (aspect ≤ 1): preserves vertical FOV.
    *
    * @override
    */
@@ -138,12 +123,9 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Gets the horizontal field of view after aspect ratio adjustments.
+   * Gets actual horizontal FOV after aspect ratio adjustments.
    *
-   * In landscape mode, returns the set horizontal FOV.
-   * In portrait mode, calculates the horizontal FOV from vertical FOV and aspect ratio.
-   *
-   * @returns The horizontal FOV in degrees
+   * @returns Horizontal FOV in degrees
    */
   public getActualHorizontalFov(): number {
     if (this.aspect >= 1) {
@@ -156,12 +138,9 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Gets the vertical field of view after aspect ratio adjustments.
+   * Gets actual vertical FOV after aspect ratio adjustments.
    *
-   * In portrait mode, returns the set vertical FOV.
-   * In landscape mode, calculates the vertical FOV from horizontal FOV and aspect ratio.
-   *
-   * @returns The vertical FOV in degrees
+   * @returns Vertical FOV in degrees
    */
   public getActualVerticalFov(): number {
     if (this.aspect < 1) {
@@ -174,10 +153,7 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Adjusts the vertical field of view to fit specified points within the camera's view.
-   *
-   * Calculates the required vertical FOV to ensure all provided vertices
-   * are visible within the vertical bounds of the camera's frustum.
+   * Adjusts vertical FOV to fit points within camera view.
    *
    * @param vertices - Array of 3D points in world coordinates
    */
@@ -206,12 +182,9 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Adjusts the vertical field of view to fit a bounding box within the camera's view.
+   * Adjusts vertical FOV to fit bounding box within camera view.
    *
-   * Calculates the required vertical FOV to ensure the bounding box
-   * is visible within the vertical bounds of the camera's frustum.
-   *
-   * @param box - The 3D bounding box in world coordinates
+   * @param box - 3D bounding box in world coordinates
    */
   public fitVerticalFovToBox(box: Box3): void {
     this.fitVerticalFovToPoints([
@@ -227,13 +200,10 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Adjusts the vertical field of view to fit a skinned mesh within the camera's view.
+   * Adjusts vertical FOV to fit skinned mesh within camera view.
+   * Updates skeleton and applies bone transformations.
    *
-   * Updates the mesh's skeleton, applies bone transformations to vertices,
-   * and calculates the required vertical FOV to fit the deformed mesh
-   * within the vertical bounds of the camera's frustum.
-   *
-   * @param skinnedMesh - The skinned mesh with active skeleton
+   * @param skinnedMesh - Skinned mesh with active skeleton
    */
   public fitVerticalFovToMesh(skinnedMesh: SkinnedMesh): void {
     skinnedMesh.updateWorldMatrix(true, true);
@@ -255,16 +225,10 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Points the camera to look at the center of mass of a skinned mesh.
+   * Points camera to look at skinned mesh center of mass.
+   * Uses iterative clustering to find main vertex concentration.
    *
-   * Updates the mesh's skeleton, applies bone transformations to vertices,
-   * calculates the center of mass using a clustering algorithm, and orients the camera
-   * to look at that point.
-   *
-   * The center of mass calculation uses iterative clustering to find the
-   * main concentration of vertices.
-   *
-   * @param skinnedMesh - The skinned mesh with active skeleton
+   * @param skinnedMesh - Skinned mesh with active skeleton
    */
   public lookAtMeshCenterOfMass(skinnedMesh: SkinnedMesh): void {
     skinnedMesh.updateWorldMatrix(true, true);
@@ -282,11 +246,11 @@ export class DualFovCamera extends PerspectiveCamera {
     }
 
     /**
-     * Finds the main cluster center of 3D points using iterative refinement.
+     * Finds main cluster center using iterative refinement.
      *
      * @param points - Array of 3D points to cluster
      * @param iterations - Number of refinement iterations
-     * @returns The center point of the main cluster
+     * @returns Center point of main cluster
      */
     const findMainCluster = (points: Vector3[], iterations = 3): Vector3 => {
       if (points.length === 0) {
@@ -322,12 +286,9 @@ export class DualFovCamera extends PerspectiveCamera {
   }
 
   /**
-   * Creates a copy of this DualFovCamera.
+   * Creates a copy of this camera with identical settings.
    *
-   * The cloned camera has identical FOV settings, position, rotation,
-   * and all other camera properties.
-   *
-   * @returns A new DualFovCamera instance
+   * @returns New DualFovCamera instance
    * @override
    */
   public override clone(): this {

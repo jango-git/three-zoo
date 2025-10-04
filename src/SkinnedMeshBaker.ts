@@ -4,14 +4,13 @@ import { AnimationMixer, BufferAttribute, Mesh, Vector3 } from "three";
 /** Number of components per vertex */
 const COMPONENT_COUNT = 3;
 
-/** Converts skinned meshes to static meshes */
+/** Converts skinned meshes to static meshes. */
 export class SkinnedMeshBaker {
   /**
-   * Converts a skinned mesh to a static mesh in its current pose.
-   * The resulting mesh has no bones but looks identical.
+   * Converts skinned mesh to static mesh in current pose.
    *
    * @param skinnedMesh - Mesh to convert
-   * @returns Static mesh with baked vertex positions
+   * @returns Static mesh with baked positions
    */
   public static bakePose(skinnedMesh: SkinnedMesh): Mesh {
     const bakedGeometry = skinnedMesh.geometry.clone();
@@ -41,13 +40,13 @@ export class SkinnedMeshBaker {
   }
 
   /**
-   * Bakes a single frame from an animation into a static mesh.
+   * Bakes animation frame to static mesh.
    *
    * @param armature - Root object with bones
    * @param skinnedMesh - Mesh to convert
-   * @param timeOffset - Time in seconds within the animation
-   * @param clip - Animation to get the pose from
-   * @returns Static mesh with baked vertex positions
+   * @param timeOffset - Time in seconds within animation
+   * @param clip - Animation clip for pose
+   * @returns Static mesh with baked positions
    */
   public static bakeAnimationFrame(
     armature: Object3D,

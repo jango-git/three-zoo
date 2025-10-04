@@ -11,59 +11,41 @@ const ROUGHNESS_COLOR_ADJUSTMENT = 0.2;
 const REFLECTIVITY_BOOST = 0.1;
 
 /**
- * Configuration options for the StandardToLambertConverter.
+ * Configuration options for material conversion.
  */
 export interface StandardToLambertConverterOptions {
   /**
-   * Whether to preserve the original material's name
+   * Preserve original material name.
    * @defaultValue true
    */
   preserveName: boolean;
   /**
-   * Whether to copy user data from the original material
+   * Copy user data from original material.
    * @defaultValue true
    */
   copyUserData: boolean;
   /**
-   * Whether to dispose the original material after conversion
+   * Dispose original material after conversion.
    * @defaultValue false
    */
   disposeOriginal: boolean;
   /**
-   * Custom color adjustment factor for roughness compensation
+   * Color adjustment factor for roughness compensation.
    * @defaultValue 0.8
    */
   roughnessColorFactor: number;
 }
 
 /**
- * Converts Three.js MeshStandardMaterial to MeshLambertMaterial.
- *
- * Handles translation between PBR properties of StandardMaterial and
- * the Lambertian reflectance model used by LambertMaterial. Applies
- * color compensation based on metalness and roughness values.
+ * Converts MeshStandardMaterial to MeshLambertMaterial with PBR compensation.
  */
 export class StandardToLambertConverter {
   /**
-   * Converts a MeshStandardMaterial to MeshLambertMaterial.
+   * Converts MeshStandardMaterial to MeshLambertMaterial.
    *
-   * Performs conversion from PBR StandardMaterial to Lambert lighting model
-   * with color compensation based on metalness and roughness values.
-   *
-   * @param material - The source MeshStandardMaterial to convert
-   * @param options - Configuration options for the conversion
-   * @returns A new MeshLambertMaterial with properties mapped from the standard material
-   *
-   * @example
-   * ```typescript
-   * const standardMaterial = new MeshStandardMaterial({
-   *   color: 0xff0000,
-   *   metalness: 0.8,
-   *   roughness: 0.2
-   * });
-   *
-   * const lambertMaterial = StandardToLambertConverter.convert(standardMaterial);
-   * ```
+   * @param material - Source material to convert
+   * @param options - Conversion options
+   * @returns New MeshLambertMaterial with mapped properties
    */
   public static convert(
     material: MeshStandardMaterial,
@@ -102,11 +84,11 @@ export class StandardToLambertConverter {
   }
 
   /**
-   * Copies basic material properties from source to target material.
+   * Copies basic material properties.
    *
-   * @param source - The source MeshStandardMaterial
-   * @param target - The target MeshLambertMaterial
-   * @param config - The resolved configuration options
+   * @param source - Source material
+   * @param target - Target material
+   * @param config - Configuration options
    * @internal
    */
   private static copyBasicProperties(
@@ -132,14 +114,11 @@ export class StandardToLambertConverter {
   }
 
   /**
-   * Converts color-related properties with PBR compensation.
+   * Converts color properties with PBR compensation.
    *
-   * Applies color adjustments to compensate for the loss of metalness and
-   * roughness information when converting to Lambert material.
-   *
-   * @param source - The source MeshStandardMaterial
-   * @param target - The target MeshLambertMaterial
-   * @param config - The resolved configuration options
+   * @param source - Source material
+   * @param target - Target material
+   * @param config - Configuration options
    * @internal
    */
   private static convertColorProperties(
@@ -169,13 +148,10 @@ export class StandardToLambertConverter {
   }
 
   /**
-   * Converts and maps texture properties from Standard to Lambert material.
+   * Converts texture properties from Standard to Lambert material.
    *
-   * Transfers compatible texture maps including diffuse, normal, emissive,
-   * AO, light maps, and environment maps.
-   *
-   * @param source - The source MeshStandardMaterial
-   * @param target - The target MeshLambertMaterial
+   * @param source - Source material
+   * @param target - Target material
    * @internal
    */
   private static convertTextureMaps(
@@ -229,10 +205,10 @@ export class StandardToLambertConverter {
   }
 
   /**
-   * Copies UV transformation properties for texture maps.
+   * Copies UV transformation properties.
    *
-   * @param source - The source MeshStandardMaterial
-   * @param target - The target MeshLambertMaterial
+   * @param source - Source material
+   * @param target - Target material
    * @internal
    */
   private static copyUVTransforms(
@@ -251,8 +227,8 @@ export class StandardToLambertConverter {
   /**
    * Converts transparency and rendering properties.
    *
-   * @param source - The source MeshStandardMaterial
-   * @param target - The target MeshLambertMaterial
+   * @param source - Source material
+   * @param target - Target material
    * @internal
    */
   private static convertTransparencyProperties(

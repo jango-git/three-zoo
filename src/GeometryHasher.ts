@@ -4,17 +4,17 @@ const POSITION_COMPONENT_COUNT = 3;
 const NORMAL_COMPONENT_COUNT = 3;
 
 /**
- * Internal utility for identifying identical geometries.
+ * Utility for identifying identical geometries.
  * @internal
  */
 export class GeometryHasher {
   /**
-   * Creates a hash for a geometry based on its vertex data.
-   * Vertices that differ by less than tolerance are considered the same.
+   * Creates geometry hash based on vertex data.
+   * Vertices within tolerance are considered identical.
    *
    * @param geometry - Geometry to hash
    * @param tolerance - Distance tolerance for vertex comparison
-   * @returns Hash string for the geometry
+   * @returns Hash string
    * @internal
    */
   public static getGeometryHash(
