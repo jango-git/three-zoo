@@ -19,12 +19,12 @@ export class SceneTraversal {
    *
    * @param object - Root object to start from
    * @param name - Name to search for (case-sensitive)
-   * @returns First matching object or null
+   * @returns First matching object or undefined
    */
   public static getObjectByName(
     object: Object3D,
     name: string,
-  ): Object3D | null {
+  ): Object3D | undefined {
     if (object.name === name) {
       return object;
     }
@@ -36,7 +36,7 @@ export class SceneTraversal {
       }
     }
 
-    return null;
+    return undefined;
   }
 
   /**
@@ -44,12 +44,12 @@ export class SceneTraversal {
    *
    * @param object - Root object to start from
    * @param name - Material name to search for (case-sensitive)
-   * @returns First matching material or null
+   * @returns First matching material or undefined
    */
   public static getMaterialByName(
     object: Object3D,
     name: string,
-  ): Material | null {
+  ): Material | undefined {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
         for (const material of object.material) {
@@ -69,7 +69,7 @@ export class SceneTraversal {
       }
     }
 
-    return null;
+    return undefined;
   }
 
   /**
@@ -277,5 +277,56 @@ export class SceneTraversal {
     }
 
     return result;
+  }
+
+  /**
+   * Clones material by name and replaces all instances with the clone.
+   *
+   * @param object - Root object to start from
+   * @param name - Material name to search for (case-sensitive)
+   * @returns Cloned material or undefined if not found
+   */
+  public static cloneMaterialByName(
+    object: Object3D,
+    name: string,
+  ): Material | undefined {
+    const originalMaterial = SceneTraversal.getMaterialByName(object, name);
+
+    if (!originalMaterial) {
+      return undefined;
+    }
+
+    const clonedMaterial = originalMaterial.clone();
+
+    SceneTraversal.replaceMaterial(object, originalMaterial, clonedMaterial);
+
+    return clonedMaterial;
+  }
+
+  /**
+   * Replaces all instances of a material with another material.
+   *
+   * @param object - Root object to start from
+   * @param oldMaterial - Material to replace
+   * @param newMaterial - Material to use as replacement
+   */
+  private static replaceMaterial(
+    object: Object3D,
+    oldMaterial: Material,
+    newMaterial: Material,
+  ): void {
+    if (object instanceof Mesh) {
+      if (Array.isArray(object.material)) {
+        object.material = object.material.map((material) =>
+          material === oldMaterial ? newMaterial : material,
+        );
+      } else if (object.material === oldMaterial) {
+        object.material = newMaterial;
+      }
+    }
+
+    for (const child of object.children) {
+      SceneTraversal.replaceMaterial(child, oldMaterial, newMaterial);
+    }
   }
 }
