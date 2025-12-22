@@ -201,29 +201,6 @@ export class StandardToBasicConverter {
       // Use metalness map as specular map for some reflective effect
       target.specularMap = source.metalnessMap;
     }
-
-    // Copy UV transforms
-    this.copyUVTransforms(source, target);
-  }
-
-  /**
-   * Copies UV transformation properties.
-   *
-   * @param source - Source material
-   * @param target - Target material
-   * @internal
-   */
-  private static copyUVTransforms(
-    source: MeshStandardMaterial,
-    target: MeshBasicMaterial,
-  ): void {
-    // Main texture UV transform
-    if (source.map && target.map) {
-      target.map.offset.copy(source.map.offset);
-      target.map.repeat.copy(source.map.repeat);
-      target.map.rotation = source.map.rotation;
-      target.map.center.copy(source.map.center);
-    }
   }
 
   /**

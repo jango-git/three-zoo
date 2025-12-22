@@ -1,17 +1,10 @@
 import type { MeshStandardMaterial } from "three";
-import { Color, MeshPhongMaterial } from "three";
-
-/** Maximum shininess value for Phong material */
-const MAX_SHININESS = 100;
-/** Factor for metalness darkness adjustment */
-const METALNESS_DARKNESS_FACTOR = 0.3;
-/** Minimum reflectivity boost for environment maps */
-const REFLECTIVITY_BOOST = 0.1;
+import { MeshPhysicalMaterial } from "three";
 
 /**
  * Configuration options for material conversion.
  */
-export interface StandardToPhongConverterOptions {
+export interface StandardToPhysicalConverterOptions {
   /**
    * Preserve original material name.
    * @defaultValue true
@@ -28,63 +21,89 @@ export interface StandardToPhongConverterOptions {
    */
   disposeOriginal: boolean;
   /**
-   * Maximum shininess value when roughness is 0.
-   * @defaultValue 100
+   * Default clearcoat value for the physical material.
+   * @defaultValue 0
    */
-  maxShininess: number;
+  clearcoat: number;
   /**
-   * Specular intensity multiplier.
-   * @defaultValue 0.5
+   * Default clearcoat roughness value.
+   * @defaultValue 0
    */
-  specularIntensity: number;
+  clearcoatRoughness: number;
+  /**
+   * Default sheen value for the physical material.
+   * @defaultValue 0
+   */
+  sheen: number;
+  /**
+   * Default transmission value (0 = opaque, 1 = fully transmissive).
+   * @defaultValue 0
+   */
+  transmission: number;
+  /**
+   * Default index of refraction.
+   * @defaultValue 1.5
+   */
+  ior: number;
 }
 
 /**
- * Converts MeshStandardMaterial to MeshPhongMaterial with PBR compensation.
+ * Converts MeshStandardMaterial to MeshPhysicalMaterial.
+ *
+ * MeshPhysicalMaterial extends MeshStandardMaterial with additional
+ * physically-based properties like clearcoat, sheen, and transmission.
+ * This converter copies all Standard properties and allows setting
+ * Physical-specific defaults.
  */
-export class StandardToPhongConverter {
+export class StandardToPhysicalConverter {
   /**
-   * Converts MeshStandardMaterial to MeshPhongMaterial.
+   * Converts MeshStandardMaterial to MeshPhysicalMaterial.
    *
    * @param material - Source material to convert
    * @param options - Conversion options
-   * @returns New MeshPhongMaterial with mapped properties
+   * @returns New MeshPhysicalMaterial with mapped properties
    */
   public static convert(
     material: MeshStandardMaterial,
-    options: Partial<StandardToPhongConverterOptions> = {},
-  ): MeshPhongMaterial {
+    options: Partial<StandardToPhysicalConverterOptions> = {},
+  ): MeshPhysicalMaterial {
     const config = {
       preserveName: true,
       copyUserData: true,
       disposeOriginal: false,
-      maxShininess: MAX_SHININESS,
-      specularIntensity: 0.5,
+      clearcoat: 0,
+      clearcoatRoughness: 0,
+      sheen: 0,
+      transmission: 0,
+      ior: 1.5,
       ...options,
     };
 
-    // Create new Phong material
-    const phongMaterial = new MeshPhongMaterial();
+    // Create new Physical material
+    const physicalMaterial = new MeshPhysicalMaterial();
 
     // Copy basic material properties
-    this.copyBasicProperties(material, phongMaterial, config);
+    this.copyBasicProperties(material, physicalMaterial, config);
 
-    // Handle color properties with PBR compensation
-    this.convertColorProperties(material, phongMaterial, config);
+    // Copy Standard material properties (Physical extends Standard)
+    this.copyStandardProperties(material, physicalMaterial);
 
     // Handle texture maps
-    this.convertTextureMaps(material, phongMaterial);
+    this.convertTextureMaps(material, physicalMaterial);
 
     // Handle transparency and alpha
-    this.convertTransparencyProperties(material, phongMaterial);
+    this.convertTransparencyProperties(material, physicalMaterial);
+
+    // Apply Physical-specific properties from config
+    this.applyPhysicalProperties(physicalMaterial, config);
 
     // Cleanup if requested
     if (config.disposeOriginal) {
       material.dispose();
     }
 
-    phongMaterial.needsUpdate = true;
-    return phongMaterial;
+    physicalMaterial.needsUpdate = true;
+    return physicalMaterial;
   }
 
   /**
@@ -97,8 +116,8 @@ export class StandardToPhongConverter {
    */
   private static copyBasicProperties(
     source: MeshStandardMaterial,
-    target: MeshPhongMaterial,
-    config: Required<StandardToPhongConverterOptions>,
+    target: MeshPhysicalMaterial,
+    config: Required<StandardToPhysicalConverterOptions>,
   ): void {
     if (config.preserveName) {
       target.name = source.name;
@@ -118,48 +137,31 @@ export class StandardToPhongConverter {
   }
 
   /**
-   * Converts color properties with PBR compensation.
+   * Copies MeshStandardMaterial-specific properties.
    *
    * @param source - Source material
    * @param target - Target material
-   * @param config - Configuration options
    * @internal
    */
-  private static convertColorProperties(
+  private static copyStandardProperties(
     source: MeshStandardMaterial,
-    target: MeshPhongMaterial,
-    config: Required<StandardToPhongConverterOptions>,
+    target: MeshPhysicalMaterial,
   ): void {
+    // Color properties
     target.color = source.color.clone();
-
-    // Adjust color based on metalness
-    if (source.metalness > 0) {
-      const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
-      target.color.multiplyScalar(metalnessFactor);
-    }
-
-    // Convert roughness to shininess (inverse relationship)
-    // Roughness 0 = max shininess, Roughness 1 = shininess 0
-    target.shininess = (1 - source.roughness) * config.maxShininess;
-
-    // Calculate specular color from metalness and base color
-    if (source.metalness > 0) {
-      // Metallic materials have tinted specular
-      target.specular = source.color
-        .clone()
-        .multiplyScalar(source.metalness * config.specularIntensity);
-    } else {
-      // Non-metallic materials have white/gray specular
-      const specularValue = config.specularIntensity * (1 - source.roughness);
-      target.specular = new Color(specularValue, specularValue, specularValue);
-    }
-
     target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
+
+    // PBR properties
+    target.metalness = source.metalness;
+    target.roughness = source.roughness;
+
+    // Environment map properties
+    target.envMapIntensity = source.envMapIntensity;
   }
 
   /**
-   * Converts texture properties from Standard to Phong material.
+   * Converts texture properties from Standard to Physical material.
    *
    * @param source - Source material
    * @param target - Target material
@@ -167,7 +169,7 @@ export class StandardToPhongConverter {
    */
   private static convertTextureMaps(
     source: MeshStandardMaterial,
-    target: MeshPhongMaterial,
+    target: MeshPhysicalMaterial,
   ): void {
     // Diffuse/Albedo map
     if (source.map) {
@@ -182,6 +184,7 @@ export class StandardToPhongConverter {
     // Normal map
     if (source.normalMap) {
       target.normalMap = source.normalMap;
+      target.normalMapType = source.normalMapType;
       target.normalScale = source.normalScale.clone();
     }
 
@@ -196,6 +199,16 @@ export class StandardToPhongConverter {
       target.displacementMap = source.displacementMap;
       target.displacementScale = source.displacementScale;
       target.displacementBias = source.displacementBias;
+    }
+
+    // Roughness map
+    if (source.roughnessMap) {
+      target.roughnessMap = source.roughnessMap;
+    }
+
+    // Metalness map
+    if (source.metalnessMap) {
+      target.metalnessMap = source.metalnessMap;
     }
 
     // Light map
@@ -213,20 +226,11 @@ export class StandardToPhongConverter {
     // Environment map
     if (source.envMap) {
       target.envMap = source.envMap;
-      target.reflectivity = Math.min(
-        source.metalness + REFLECTIVITY_BOOST,
-        1.0,
-      );
     }
 
     // Alpha map
     if (source.alphaMap) {
       target.alphaMap = source.alphaMap;
-    }
-
-    // Use metalness map as specular map
-    if (source.metalnessMap) {
-      target.specularMap = source.metalnessMap;
     }
   }
 
@@ -239,7 +243,7 @@ export class StandardToPhongConverter {
    */
   private static convertTransparencyProperties(
     source: MeshStandardMaterial,
-    target: MeshPhongMaterial,
+    target: MeshPhysicalMaterial,
   ): void {
     target.transparent = source.transparent;
     target.opacity = source.opacity;
@@ -248,4 +252,24 @@ export class StandardToPhongConverter {
     target.depthWrite = source.depthWrite;
     target.blending = source.blending;
   }
+
+  /**
+   * Applies Physical-specific properties from configuration.
+   *
+   * @param target - Target material
+   * @param config - Configuration options
+   * @internal
+   */
+  private static applyPhysicalProperties(
+    target: MeshPhysicalMaterial,
+    config: Required<StandardToPhysicalConverterOptions>,
+  ): void {
+    target.clearcoat = config.clearcoat;
+    target.clearcoatRoughness = config.clearcoatRoughness;
+    target.sheen = config.sheen;
+    target.transmission = config.transmission;
+    target.ior = config.ior;
+  }
 }
+
+export default StandardToPhysicalConverter;
