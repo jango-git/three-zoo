@@ -150,16 +150,16 @@ export class SceneTraversal {
    */
   public static enumerateMaterials(
     object: Object3D,
-    callback: (material: Material) => Material | undefined,
+    callback: (material: Material, mesh: Mesh) => Material | undefined,
   ): void {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
         for (let i = 0; i < object.material.length; i++) {
           object.material[i] =
-            callback(object.material[i]) ?? object.material[i];
+            callback(object.material[i], object) ?? object.material[i];
         }
       } else {
-        object.material = callback(object.material) ?? object.material;
+        object.material = callback(object.material, object) ?? object.material;
       }
     }
 
