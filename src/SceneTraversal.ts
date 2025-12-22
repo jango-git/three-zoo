@@ -143,21 +143,23 @@ export class SceneTraversal {
 
   /**
    * Executes callback for all materials from mesh objects.
+   * If callback returns a material, replaces the original material.
    *
    * @param object - Root object to start from
-   * @param callback - Function to execute for each material
+   * @param callback - Function to execute for each material. Return a material to replace.
    */
   public static enumerateMaterials(
     object: Object3D,
-    callback: (material: Material) => void,
+    callback: (material: Material) => Material | undefined,
   ): void {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
-        for (const material of object.material) {
-          callback(material);
+        for (let i = 0; i < object.material.length; i++) {
+          object.material[i] =
+            callback(object.material[i]) ?? object.material[i];
         }
       } else {
-        callback(object.material);
+        object.material = callback(object.material) ?? object.material;
       }
     }
 
