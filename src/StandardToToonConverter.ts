@@ -1,10 +1,10 @@
-import type { MeshStandardMaterial } from "three";
-import { MeshPhysicalMaterial } from "three";
+import type { MeshStandardMaterial, Texture } from "three";
+import { MeshToonMaterial } from "three";
 
 /**
  * Configuration options for material conversion.
  */
-export interface StandardToPhysicalConverterOptions {
+export interface StandardToToonConverterOptions {
   /**
    * Preserve original material name.
    * @defaultValue true
@@ -21,89 +21,69 @@ export interface StandardToPhysicalConverterOptions {
    */
   disposeOriginal: boolean;
   /**
-   * Default clearcoat value for the physical material.
-   * @defaultValue 0
+   * Optional gradient map for toon shading steps.
+   * If not provided, uses Three.js default 3-step gradient.
+   * @defaultValue null
    */
-  clearcoat: number;
-  /**
-   * Default clearcoat roughness value.
-   * @defaultValue 0
-   */
-  clearcoatRoughness: number;
-  /**
-   * Default sheen value for the physical material.
-   * @defaultValue 0
-   */
-  sheen: number;
-  /**
-   * Default transmission value (0 = opaque, 1 = fully transmissive).
-   * @defaultValue 0
-   */
-  transmission: number;
-  /**
-   * Default index of refraction.
-   * @defaultValue 1.5
-   */
-  ior: number;
+  gradientMap: Texture | null;
 }
 
 /**
- * Converts MeshStandardMaterial to MeshPhysicalMaterial.
+ * Converts MeshStandardMaterial to MeshToonMaterial.
  *
- * MeshPhysicalMaterial extends MeshStandardMaterial with additional
- * physically-based properties like clearcoat, sheen, and transmission.
- * This converter copies all Standard properties and allows setting
- * Physical-specific defaults.
+ * MeshToonMaterial provides a cel-shaded/cartoon appearance with
+ * discrete lighting steps. This converter maps Standard material
+ * properties to Toon material, preserving color and texture information
+ * while applying toon shading characteristics.
+ *
+ * Note: Some PBR properties (metalness, roughness) are not supported
+ * by MeshToonMaterial and will be ignored.
  */
-export class StandardToPhysicalConverter {
+export class StandardToToonConverter {
   /**
-   * Converts MeshStandardMaterial to MeshPhysicalMaterial.
+   * Converts MeshStandardMaterial to MeshToonMaterial.
    *
    * @param material - Source material to convert
    * @param options - Conversion options
-   * @returns New MeshPhysicalMaterial with mapped properties
+   * @returns New MeshToonMaterial with mapped properties
    */
   public static convert(
     material: MeshStandardMaterial,
-    options: Partial<StandardToPhysicalConverterOptions> = {},
-  ): MeshPhysicalMaterial {
+    options: Partial<StandardToToonConverterOptions> = {},
+  ): MeshToonMaterial {
     const config = {
       preserveName: true,
       copyUserData: true,
       disposeOriginal: false,
-      clearcoat: 0,
-      clearcoatRoughness: 0,
-      sheen: 0,
-      transmission: 0,
-      ior: 1.5,
+      gradientMap: null,
       ...options,
     };
 
-    // Create new Physical material
-    const physicalMaterial = new MeshPhysicalMaterial();
+    // Create new Toon material
+    const toonMaterial = new MeshToonMaterial();
 
     // Copy basic material properties
-    this.copyBasicProperties(material, physicalMaterial, config);
+    this.copyBasicProperties(material, toonMaterial, config);
 
-    // Copy Standard material properties (Physical extends Standard)
-    this.copyStandardProperties(material, physicalMaterial);
+    // Handle color properties
+    this.convertColorProperties(material, toonMaterial);
 
     // Handle texture maps
-    this.convertTextureMaps(material, physicalMaterial);
+    this.convertTextureMaps(material, toonMaterial);
 
     // Handle transparency and alpha
-    this.convertTransparencyProperties(material, physicalMaterial);
+    this.convertTransparencyProperties(material, toonMaterial);
 
-    // Apply Physical-specific properties from config
-    this.applyPhysicalProperties(physicalMaterial, config);
+    // Apply toon-specific properties
+    this.applyToonProperties(toonMaterial, config);
 
     // Cleanup if requested
     if (config.disposeOriginal) {
       material.dispose();
     }
 
-    physicalMaterial.needsUpdate = true;
-    return physicalMaterial;
+    toonMaterial.needsUpdate = true;
+    return toonMaterial;
   }
 
   /**
@@ -116,8 +96,8 @@ export class StandardToPhysicalConverter {
    */
   private static copyBasicProperties(
     source: MeshStandardMaterial,
-    target: MeshPhysicalMaterial,
-    config: Required<StandardToPhysicalConverterOptions>,
+    target: MeshToonMaterial,
+    config: Required<StandardToToonConverterOptions>,
   ): void {
     if (config.preserveName) {
       target.name = source.name;
@@ -129,7 +109,6 @@ export class StandardToPhysicalConverter {
     target.wireframe = source.wireframe;
     target.wireframeLinewidth = source.wireframeLinewidth;
     target.vertexColors = source.vertexColors;
-    target.flatShading = source.flatShading;
 
     if (config.copyUserData) {
       target.userData = { ...source.userData };
@@ -137,31 +116,26 @@ export class StandardToPhysicalConverter {
   }
 
   /**
-   * Copies MeshStandardMaterial-specific properties.
+   * Converts color properties from Standard to Toon material.
    *
    * @param source - Source material
    * @param target - Target material
    * @internal
    */
-  private static copyStandardProperties(
+  private static convertColorProperties(
     source: MeshStandardMaterial,
-    target: MeshPhysicalMaterial,
+    target: MeshToonMaterial,
   ): void {
-    // Color properties
     target.color = source.color.clone();
     target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
-
-    // PBR properties
-    target.metalness = source.metalness;
-    target.roughness = source.roughness;
-
-    // Environment map properties
-    target.envMapIntensity = source.envMapIntensity;
   }
 
   /**
-   * Converts texture properties from Standard to Physical material.
+   * Converts texture properties from Standard to Toon material.
+   *
+   * Note: MeshToonMaterial does not support roughnessMap, metalnessMap,
+   * or envMap. These properties are intentionally skipped.
    *
    * @param source - Source material
    * @param target - Target material
@@ -169,7 +143,7 @@ export class StandardToPhysicalConverter {
    */
   private static convertTextureMaps(
     source: MeshStandardMaterial,
-    target: MeshPhysicalMaterial,
+    target: MeshToonMaterial,
   ): void {
     // Diffuse/Albedo map
     if (source.map) {
@@ -201,16 +175,6 @@ export class StandardToPhysicalConverter {
       target.displacementBias = source.displacementBias;
     }
 
-    // Roughness map
-    if (source.roughnessMap) {
-      target.roughnessMap = source.roughnessMap;
-    }
-
-    // Metalness map
-    if (source.metalnessMap) {
-      target.metalnessMap = source.metalnessMap;
-    }
-
     // Light map
     if (source.lightMap) {
       target.lightMap = source.lightMap;
@@ -221,11 +185,6 @@ export class StandardToPhysicalConverter {
     if (source.aoMap) {
       target.aoMap = source.aoMap;
       target.aoMapIntensity = source.aoMapIntensity;
-    }
-
-    // Environment map
-    if (source.envMap) {
-      target.envMap = source.envMap;
     }
 
     // Alpha map
@@ -243,7 +202,7 @@ export class StandardToPhysicalConverter {
    */
   private static convertTransparencyProperties(
     source: MeshStandardMaterial,
-    target: MeshPhysicalMaterial,
+    target: MeshToonMaterial,
   ): void {
     target.transparent = source.transparent;
     target.opacity = source.opacity;
@@ -254,20 +213,18 @@ export class StandardToPhysicalConverter {
   }
 
   /**
-   * Applies Physical-specific properties from configuration.
+   * Applies Toon-specific properties from configuration.
    *
    * @param target - Target material
    * @param config - Configuration options
    * @internal
    */
-  private static applyPhysicalProperties(
-    target: MeshPhysicalMaterial,
-    config: Required<StandardToPhysicalConverterOptions>,
+  private static applyToonProperties(
+    target: MeshToonMaterial,
+    config: Required<StandardToToonConverterOptions>,
   ): void {
-    target.clearcoat = config.clearcoat;
-    target.clearcoatRoughness = config.clearcoatRoughness;
-    target.sheen = config.sheen;
-    target.transmission = config.transmission;
-    target.ior = config.ior;
+    if (config.gradientMap) {
+      target.gradientMap = config.gradientMap;
+    }
   }
 }

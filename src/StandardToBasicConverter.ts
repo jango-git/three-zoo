@@ -222,5 +222,3 @@ export class StandardToBasicConverter {
     target.blending = source.blending;
   }
 }
-
-export default StandardToBasicConverter;
