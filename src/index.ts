@@ -1,7 +1,9 @@
-export * from "./DualFovCamera";
-export * from "./SceneTraversal";
-export * from "./SkinnedMeshBaker";
-export * from "./StandardToBasicConverter";
-export * from "./StandardToLambertConverter";
-export * from "./StandardToPhongConverter";
-export * from "./Sun";
+export { DualFovCamera } from "./DualFovCamera";
+export { SceneTraversal } from "./SceneTraversal";
+export { SkinnedMeshBaker } from "./SkinnedMeshBaker";
+export { StandardToBasicConverter } from "./StandardToBasicConverter";
+export { StandardToLambertConverter } from "./StandardToLambertConverter";
+export { StandardToPhongConverter } from "./StandardToPhongConverter";
+export { StandardToPhysicalConverter } from "./StandardToPhysicalConverter";
+export { StandardToToonConverter } from "./StandardToToonConverter";
+export { Sun } from "./Sun";
