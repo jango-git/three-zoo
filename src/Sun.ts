@@ -87,6 +87,17 @@ export class Sun extends DirectionalLight {
   }
 
   /**
+   * Sets spherical position of the sun.
+   *
+   * @param elevation - Elevation angle in radians (phi angle)
+   * @param azimuth - Azimuth angle in radians (theta angle)
+   * @param distance - Distance from origin in world units
+   */
+  public setPosition(elevation: number, azimuth: number, distance = 1): void {
+    this.position.setFromSphericalCoords(distance, elevation, azimuth);
+  }
+
+  /**
    * Configures shadow camera frustum to cover bounding box.
    *
    * @param box3 - 3D bounding box to cover with shadows
