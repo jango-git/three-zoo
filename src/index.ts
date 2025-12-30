@@ -1,6 +1,7 @@
 export { DualFovCamera } from "./DualFovCamera";
 export { SceneTraversal } from "./SceneTraversal";
 export { SkinnedMeshBaker } from "./SkinnedMeshBaker";
+export { Sky } from "./Sky";
 export { StandardToBasicConverter } from "./StandardToBasicConverter";
 export { StandardToLambertConverter } from "./StandardToLambertConverter";
 export { StandardToPhongConverter } from "./StandardToPhongConverter";
