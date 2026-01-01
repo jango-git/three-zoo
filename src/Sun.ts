@@ -142,23 +142,96 @@ export class Sun extends DirectionalLight {
   }
 
   /**
+   * Sets sun direction, color and intensity based on brightest point in HDR environment map.
+   *
+   * @param texture - HDR texture to analyze (must have image data)
+   * @param distance - Distance to place sun from origin
+   * @param intensityScale - Multiplier for intensity derived from luminance (default: 1)
+   */
+  public setFromHDRTexture(
+    texture: Texture,
+    intensityScale = 1,
+    distance = 1,
+  ): void {
+    this.setColorFromHDRTexture(texture);
+    this.setIntensityFromHDRTexture(texture, intensityScale);
+    this.setDirectionFromHDRTexture(texture, distance);
+  }
+
+  /**
+   * Sets sun color based on brightest point in HDR environment map.
+   *
+   * @param texture - HDR texture to analyze (must have image data)
+   */
+  public setColorFromHDRTexture(texture: Texture): void {
+    const { index } = this.findBrightestPixel(texture);
+    const data = texture.image.data;
+
+    const r = data[index];
+    const g = data[index + 1];
+    const b = data[index + 2];
+    const maxChannel = Math.max(r, g, b, 1);
+
+    this.color.setRGB(r / maxChannel, g / maxChannel, b / maxChannel);
+  }
+
+  /**
+   * Sets sun intensity based on luminance of brightest point in HDR environment map.
+   *
+   * @param texture - HDR texture to analyze (must have image data)
+   * @param scale - Multiplier for intensity (default: 1)
+   */
+  public setIntensityFromHDRTexture(texture: Texture, scale = 1): void {
+    const { luminance } = this.findBrightestPixel(texture);
+    this.intensity = luminance * scale;
+  }
+
+  /**
    * Sets sun direction based on brightest point in HDR environment map.
    *
    * @param texture - HDR texture to analyze (must have image data)
    * @param distance - Distance to place sun from origin
    */
   public setDirectionFromHDRTexture(texture: Texture, distance = 1): void {
-    const data = texture.image.data;
+    const { index } = this.findBrightestPixel(texture);
+
     const width = texture.image.width;
     const height = texture.image.height;
+    const step =
+      texture.format === RGBAFormat ? RGBA_CHANNEL_COUNT : RGB_CHANNEL_COUNT;
+
+    // Convert to spherical coordinates
+    const pixelIndex = index / step;
+    const x = pixelIndex % width;
+    const y = Math.floor(pixelIndex / width);
+
+    const u = x / width;
+    const v = y / height;
+
+    const elevation = v * Math.PI;
+    const azimuth = u * -Math.PI * 2 - Math.PI / 2;
+
+    this.position.setFromSphericalCoords(distance, elevation, azimuth);
+  }
+
+  /**
+   * Finds the brightest pixel in an HDR texture.
+   *
+   * @param texture - HDR texture to analyze
+   * @returns Index and luminance of brightest pixel
+   */
+  private findBrightestPixel(texture: Texture): {
+    index: number;
+    luminance: number;
+  } {
+    const data = texture.image.data;
 
     let maxLuminance = 0;
     let maxIndex = 0;
 
-    // Find brightest pixel
-
     const step =
       texture.format === RGBAFormat ? RGBA_CHANNEL_COUNT : RGB_CHANNEL_COUNT;
+
     for (let i = 0; i < data.length; i += step) {
       const r = data[i];
       const g = data[i + 1];
@@ -170,17 +243,6 @@ export class Sun extends DirectionalLight {
       }
     }
 
-    // Convert to spherical coordinates
-    const pixelIndex = maxIndex / step;
-    const x = pixelIndex % width;
-    const y = Math.floor(pixelIndex / width);
-
-    const u = x / width;
-    const v = y / height;
-
-    const elevation = v * Math.PI;
-    const azimuth = u * -Math.PI * 2 - Math.PI / 2;
-
-    this.position.setFromSphericalCoords(distance, elevation, azimuth);
+    return { index: maxIndex, luminance: maxLuminance };
   }
 }

@@ -21,7 +21,7 @@ const GROUND_SAMPLE_THRESHOLD = 0.75;
 /**
  * Configuration options for HDR color extraction.
  */
-export interface SkyOptions {
+export interface SkyLightOptions {
   /** Number of brightest pixels to average for sky color (default: 100) */
   skySampleCount?: number;
   /** Number of pixels to average for ground color (default: 100) */
@@ -42,7 +42,7 @@ interface Pixel {
 /**
  * Hemisphere light with HDR environment map support for automatic sky/ground color extraction.
  */
-export class Sky extends HemisphereLight {
+export class SkyLight extends HemisphereLight {
   /**
    * Sets sky and ground colors from an HDR texture.
    * Analyzes upper hemisphere for sky color and lower hemisphere for ground color.
@@ -52,7 +52,7 @@ export class Sky extends HemisphereLight {
    */
   public setColorsFromHDRTexture(
     texture: Texture,
-    options: SkyOptions = {},
+    options: SkyLightOptions = {},
   ): void {
     const {
       skySampleCount = 100,
