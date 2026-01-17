@@ -109,7 +109,7 @@ export class StandardToBasicConverter {
     target.wireframeLinewidth = source.wireframeLinewidth;
     target.vertexColors = source.vertexColors;
 
-    if (config.copyUserData) {
+    if (config.copyUserData && source.userData) {
       target.userData = { ...source.userData };
     }
   }
@@ -128,32 +128,34 @@ export class StandardToBasicConverter {
     config: Required<StandardToBasicConverterOptions>,
   ): void {
     // Base color conversion with brightness compensation
-    target.color = source.color.clone();
+    if (source.color) {
+      target.color = source.color.clone();
 
-    // Apply brightness compensation since BasicMaterial doesn't respond to lighting
-    target.color.multiplyScalar(config.brightnessFactor);
+      // Apply brightness compensation since BasicMaterial doesn't respond to lighting
+      target.color.multiplyScalar(config.brightnessFactor);
 
-    // Adjust for metalness - metallic materials tend to be darker without lighting
-    if (source.metalness > 0) {
-      const metalnessBrightness =
-        1 + source.metalness * METALNESS_BRIGHTNESS_FACTOR;
-      target.color.multiplyScalar(metalnessBrightness);
+      // Adjust for metalness - metallic materials tend to be darker without lighting
+      if (source.metalness > 0) {
+        const metalnessBrightness =
+          1 + source.metalness * METALNESS_BRIGHTNESS_FACTOR;
+        target.color.multiplyScalar(metalnessBrightness);
+      }
+
+      // Combine emissive color if requested
+      if (config.combineEmissive && source.emissive) {
+        const emissiveContribution = source.emissive
+          .clone()
+          .multiplyScalar(
+            source.emissiveIntensity * EMISSIVE_CONTRIBUTION_FACTOR,
+          );
+        target.color.add(emissiveContribution);
+      }
+
+      // Ensure color doesn't exceed valid range
+      target.color.r = Math.min(target.color.r, 1.0);
+      target.color.g = Math.min(target.color.g, 1.0);
+      target.color.b = Math.min(target.color.b, 1.0);
     }
-
-    // Combine emissive color if requested
-    if (config.combineEmissive) {
-      const emissiveContribution = source.emissive
-        .clone()
-        .multiplyScalar(
-          source.emissiveIntensity * EMISSIVE_CONTRIBUTION_FACTOR,
-        );
-      target.color.add(emissiveContribution);
-    }
-
-    // Ensure color doesn't exceed valid range
-    target.color.r = Math.min(target.color.r, 1.0);
-    target.color.g = Math.min(target.color.g, 1.0);
-    target.color.b = Math.min(target.color.b, 1.0);
   }
 
   /**

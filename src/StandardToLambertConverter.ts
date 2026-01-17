@@ -108,7 +108,7 @@ export class StandardToLambertConverter {
     target.vertexColors = source.vertexColors;
     target.flatShading = source.flatShading;
 
-    if (config.copyUserData) {
+    if (config.copyUserData && source.userData) {
       target.userData = { ...source.userData };
     }
   }
@@ -126,24 +126,29 @@ export class StandardToLambertConverter {
     target: MeshLambertMaterial,
     config: Required<StandardToLambertConverterOptions>,
   ): void {
-    target.color = source.color.clone();
+    if (source.color) {
+      target.color = source.color.clone();
 
-    // Adjust color based on metalness and roughness for better visual match
-    if (source.metalness > 0) {
-      // Metallic materials tend to be darker in Lambert shading
-      const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
-      target.color.multiplyScalar(metalnessFactor);
+      // Adjust color based on metalness and roughness for better visual match
+      if (source.metalness > 0) {
+        // Metallic materials tend to be darker in Lambert shading
+        const metalnessFactor =
+          1 - source.metalness * METALNESS_DARKNESS_FACTOR;
+        target.color.multiplyScalar(metalnessFactor);
+      }
+
+      if (source.roughness > ROUGHNESS_THRESHOLD) {
+        // Rough materials appear slightly darker
+        const roughnessFactor =
+          config.roughnessColorFactor +
+          source.roughness * ROUGHNESS_COLOR_ADJUSTMENT;
+        target.color.multiplyScalar(roughnessFactor);
+      }
     }
 
-    if (source.roughness > ROUGHNESS_THRESHOLD) {
-      // Rough materials appear slightly darker
-      const roughnessFactor =
-        config.roughnessColorFactor +
-        source.roughness * ROUGHNESS_COLOR_ADJUSTMENT;
-      target.color.multiplyScalar(roughnessFactor);
+    if (source.emissive) {
+      target.emissive = source.emissive.clone();
     }
-
-    target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
   }
 
@@ -171,7 +176,9 @@ export class StandardToLambertConverter {
     // Normal map (Lambert materials support normal mapping)
     if (source.normalMap) {
       target.normalMap = source.normalMap;
-      target.normalScale = source.normalScale.clone();
+      if (source.normalScale) {
+        target.normalScale = source.normalScale.clone();
+      }
     }
 
     // Light map

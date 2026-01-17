@@ -112,7 +112,7 @@ export class StandardToPhongConverter {
     target.vertexColors = source.vertexColors;
     target.flatShading = source.flatShading;
 
-    if (config.copyUserData) {
+    if (config.copyUserData && source.userData) {
       target.userData = { ...source.userData };
     }
   }
@@ -130,12 +130,15 @@ export class StandardToPhongConverter {
     target: MeshPhongMaterial,
     config: Required<StandardToPhongConverterOptions>,
   ): void {
-    target.color = source.color.clone();
+    if (source.color) {
+      target.color = source.color.clone();
 
-    // Adjust color based on metalness
-    if (source.metalness > 0) {
-      const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
-      target.color.multiplyScalar(metalnessFactor);
+      // Adjust color based on metalness
+      if (source.metalness > 0) {
+        const metalnessFactor =
+          1 - source.metalness * METALNESS_DARKNESS_FACTOR;
+        target.color.multiplyScalar(metalnessFactor);
+      }
     }
 
     // Convert roughness to shininess (inverse relationship)
@@ -143,7 +146,7 @@ export class StandardToPhongConverter {
     target.shininess = (1 - source.roughness) * config.maxShininess;
 
     // Calculate specular color from metalness and base color
-    if (source.metalness > 0) {
+    if (source.metalness > 0 && source.color) {
       // Metallic materials have tinted specular
       target.specular = source.color
         .clone()
@@ -154,7 +157,9 @@ export class StandardToPhongConverter {
       target.specular = new Color(specularValue, specularValue, specularValue);
     }
 
-    target.emissive = source.emissive.clone();
+    if (source.emissive) {
+      target.emissive = source.emissive.clone();
+    }
     target.emissiveIntensity = source.emissiveIntensity;
   }
 
@@ -182,7 +187,9 @@ export class StandardToPhongConverter {
     // Normal map
     if (source.normalMap) {
       target.normalMap = source.normalMap;
-      target.normalScale = source.normalScale.clone();
+      if (source.normalScale) {
+        target.normalScale = source.normalScale.clone();
+      }
     }
 
     // Bump map

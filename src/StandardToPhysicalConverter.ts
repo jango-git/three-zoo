@@ -131,7 +131,7 @@ export class StandardToPhysicalConverter {
     target.vertexColors = source.vertexColors;
     target.flatShading = source.flatShading;
 
-    if (config.copyUserData) {
+    if (config.copyUserData && source.userData) {
       target.userData = { ...source.userData };
     }
   }
@@ -148,8 +148,12 @@ export class StandardToPhysicalConverter {
     target: MeshPhysicalMaterial,
   ): void {
     // Color properties
-    target.color = source.color.clone();
-    target.emissive = source.emissive.clone();
+    if (source.color) {
+      target.color = source.color.clone();
+    }
+    if (source.emissive) {
+      target.emissive = source.emissive.clone();
+    }
     target.emissiveIntensity = source.emissiveIntensity;
 
     // PBR properties
@@ -185,7 +189,9 @@ export class StandardToPhysicalConverter {
     if (source.normalMap) {
       target.normalMap = source.normalMap;
       target.normalMapType = source.normalMapType;
-      target.normalScale = source.normalScale.clone();
+      if (source.normalScale) {
+        target.normalScale = source.normalScale.clone();
+      }
     }
 
     // Bump map
