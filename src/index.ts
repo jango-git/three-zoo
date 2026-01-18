@@ -1,4 +1,7 @@
 export { DualFovCamera } from "./DualFovCamera";
+export { InstancedMeshGroup } from "./instancedMeshPool/InstancedMeshGroup";
+export { InstancedMeshInstance } from "./instancedMeshPool/InstancedMeshInstance";
+export { InstancedMeshPool } from "./instancedMeshPool/InstancedMeshPool";
 export { BasicToPhysicalConverter } from "./materialConverters/BasicToPhysicalConverter";
 export { StandardToBasicConverter } from "./materialConverters/StandardToBasicConverter";
 export { StandardToLambertConverter } from "./materialConverters/StandardToLambertConverter";
