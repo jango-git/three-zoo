@@ -1,4 +1,5 @@
 export { DualFovCamera } from "./DualFovCamera";
+export { BasicToPhysicalConverter } from "./materialConverters/BasicToPhysicalConverter";
 export { StandardToBasicConverter } from "./materialConverters/StandardToBasicConverter";
 export { StandardToLambertConverter } from "./materialConverters/StandardToLambertConverter";
 export { StandardToPhongConverter } from "./materialConverters/StandardToPhongConverter";
