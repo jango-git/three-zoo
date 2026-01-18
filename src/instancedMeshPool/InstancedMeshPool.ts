@@ -12,11 +12,11 @@ export interface InstancedMeshPoolEntry {
   geometry: BufferGeometry;
   material: Material;
   capacity: number;
-  instances: Set<InstancedMeshInstance>;
-  freeIndices: number[];
+  count: number;
+  instances: Map<number, InstancedMeshInstance>;
 }
 
-const TEMP_ZERO_MATRIX = new Matrix4().makeScale(0, 0, 0);
+const TEMP_MATRIX = new Matrix4();
 
 export class InstancedMeshPool {
   private readonly scene: Scene;
@@ -37,18 +37,18 @@ export class InstancedMeshPool {
   ): InstancedMeshInstance {
     const entry = this.getOrCreateEntry(geometry, material);
 
-    if (entry.freeIndices.length === 0) {
+    if (entry.count === entry.capacity) {
       this.growEntry(entry);
     }
 
-    const index = entry.freeIndices.pop()!;
-    const instance = new InstancedMeshInstance(this, entry, index);
+    const index = entry.count;
+    entry.count++;
 
-    // identity transform
+    const instance = new InstancedMeshInstance(this, entry, index);
     instance.setScale3f(1, 1, 1);
 
-    entry.instances.add(instance);
-    this.updateMeshCount(entry);
+    entry.instances.set(index, instance);
+    entry.mesh.count = entry.count;
 
     return instance;
   }
@@ -57,16 +57,27 @@ export class InstancedMeshPool {
     if (instance.index === -1) return;
 
     const entry = instance["entry"];
+    const removedIndex = instance.index;
+    const lastIndex = entry.count - 1;
 
-    entry.instances.delete(instance);
-    entry.freeIndices.push(instance.index);
+    entry.instances.delete(removedIndex);
 
-    // hide instance
-    entry.mesh.setMatrixAt(instance.index, TEMP_ZERO_MATRIX);
+    if (removedIndex !== lastIndex) {
+      // swap: move last to removed position
+      const lastInstance = entry.instances.get(lastIndex)!;
 
+      entry.mesh.getMatrixAt(lastIndex, TEMP_MATRIX);
+      entry.mesh.setMatrixAt(removedIndex, TEMP_MATRIX);
+
+      lastInstance.index = removedIndex;
+      entry.instances.delete(lastIndex);
+      entry.instances.set(removedIndex, lastInstance);
+    }
+
+    entry.count--;
+    entry.mesh.count = entry.count;
     instance.index = -1;
 
-    this.updateMeshCount(entry);
     this["notifyUpdate"](entry);
   }
 
@@ -89,8 +100,8 @@ export class InstancedMeshPool {
         geometry,
         material,
         capacity: this.initialCapacity,
-        instances: new Set(),
-        freeIndices: this.createIndexRange(0, this.initialCapacity),
+        count: 0,
+        instances: new Map(),
       };
 
       this.meshes.set(key, entry);
@@ -108,50 +119,18 @@ export class InstancedMeshPool {
     );
     newMesh.frustumCulled = false;
 
-    // copy existing matrix data
     const oldArray = entry.mesh.instanceMatrix.array;
     const newArray = newMesh.instanceMatrix.array;
     newArray.set(oldArray);
     newMesh.instanceMatrix.needsUpdate = true;
 
-    // swap meshes
     this.scene.remove(entry.mesh);
     entry.mesh.dispose();
     this.scene.add(newMesh);
 
-    // add new free indices
-    entry.freeIndices.push(
-      ...this.createIndexRange(entry.capacity, newCapacity),
-    );
-
     entry.mesh = newMesh;
     entry.capacity = newCapacity;
-
-    this.updateMeshCount(entry);
-  }
-
-  private updateMeshCount(entry: InstancedMeshPoolEntry): void {
-    if (entry.instances.size === 0) {
-      entry.mesh.count = 0;
-      return;
-    }
-
-    let maxIndex = -1;
-    for (const inst of entry.instances) {
-      if (inst.index > maxIndex) {
-        maxIndex = inst.index;
-      }
-    }
-
-    entry.mesh.count = maxIndex + 1;
-  }
-
-  private createIndexRange(start: number, end: number): number[] {
-    const result: number[] = [];
-    for (let i = start; i < end; i++) {
-      result.push(i);
-    }
-    return result;
+    entry.mesh.count = entry.count;
   }
 
   protected ["notifyUpdate"](entry: InstancedMeshPoolEntry): void {
