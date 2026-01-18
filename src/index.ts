@@ -1,10 +1,10 @@
 export { DualFovCamera } from "./DualFovCamera";
+export { StandardToBasicConverter } from "./materialConverters/StandardToBasicConverter";
+export { StandardToLambertConverter } from "./materialConverters/StandardToLambertConverter";
+export { StandardToPhongConverter } from "./materialConverters/StandardToPhongConverter";
+export { StandardToPhysicalConverter } from "./materialConverters/StandardToPhysicalConverter";
+export { StandardToToonConverter } from "./materialConverters/StandardToToonConverter";
 export { SceneTraversal } from "./SceneTraversal";
 export { SkinnedMeshBaker } from "./SkinnedMeshBaker";
 export { SkyLight } from "./SkyLight";
-export { StandardToBasicConverter } from "./StandardToBasicConverter";
-export { StandardToLambertConverter } from "./StandardToLambertConverter";
-export { StandardToPhongConverter } from "./StandardToPhongConverter";
-export { StandardToPhysicalConverter } from "./StandardToPhysicalConverter";
-export { StandardToToonConverter } from "./StandardToToonConverter";
 export { Sun } from "./Sun";
