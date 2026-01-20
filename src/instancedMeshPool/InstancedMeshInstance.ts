@@ -1,76 +1,194 @@
+import type { BufferGeometry, Material } from "three";
 import { Matrix4, Quaternion, Vector3 } from "three";
-import { InstancedMeshPool, InstancedMeshPoolEntry } from "./InstancedMeshPool";
+import type { InstancedMeshPool } from "./InstancedMeshPool";
 
 export class InstancedMeshInstance {
-  public index: number;
-  private readonly pool: InstancedMeshPool;
-  readonly ["entry"]: InstancedMeshPoolEntry;
-  private readonly matrix: Matrix4;
-  private readonly position: Vector3;
-  private readonly quaternion: Quaternion;
-  private readonly scale: Vector3;
+  private readonly position = new Vector3();
+  private readonly quaternion = new Quaternion();
+  private readonly scale = new Vector3(1, 1, 1);
+  private readonly matrix = new Matrix4();
 
-  constructor(pool: InstancedMeshPool, entry: InstancedMeshPoolEntry, index: number) {
-    this.pool = pool;
-    this["entry"] = entry;
-    this.index = index;
-    this.matrix = new Matrix4();
-    this.position = new Vector3();
-    this.quaternion = new Quaternion();
-    this.scale = new Vector3(1, 1, 1);
+  private needsUpdateMatrixFromTransform = false;
+  private needsUpdateTransformFromMatrix = false;
+  private needsUpdateInstancedMatrixFromLocalMatrix = false;
+
+  private handler: number;
+
+  constructor(
+    private readonly pool: InstancedMeshPool,
+    geometry: BufferGeometry,
+    material: Material,
+    tag = "",
+  ) {
+    this.handler = this.pool["allocate"](geometry, material, tag);
   }
 
-  setPosition(v: Vector3): this {
-    this.position.copy(v);
-    this.apply();
+  public destroy(): void {
+    if (this.handler >= 0) {
+      this.pool["deallocate"](this.handler);
+      this.handler = -1;
+    }
+  }
+
+  public isDestroyed(): boolean {
+    return this.handler < 0;
+  }
+
+  public setPosition(source: Vector3, flushTransform = false): this {
+    this.updateTransformFromMatrix();
+
+    if (!this.position.equals(source)) {
+      this.position.copy(source);
+      this.needsUpdateMatrixFromTransform = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
+
     return this;
   }
 
-  setPosition3f(x: number, y: number, z: number): this {
-    this.position.set(x, y, z);
-    this.apply();
+  public setPosition3f(
+    x: number,
+    y: number,
+    z: number,
+    flushTransform = false,
+  ): this {
+    this.updateTransformFromMatrix();
+
+    if (
+      this.position.x !== x ||
+      this.position.y !== y ||
+      this.position.z !== z
+    ) {
+      this.position.set(x, y, z);
+      this.needsUpdateMatrixFromTransform = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
+
     return this;
   }
 
-  setQuaternion(q: Quaternion): this {
-    this.quaternion.copy(q);
-    this.apply();
+  public setQuaternion(source: Quaternion, flushTransform = false): this {
+    this.updateTransformFromMatrix();
+
+    if (!this.quaternion.equals(source)) {
+      this.quaternion.copy(source);
+      this.needsUpdateMatrixFromTransform = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
+
     return this;
   }
 
-  setQuaternion4f(x: number, y: number, z: number, w: number): this {
-    this.quaternion.set(x, y, z, w);
-    this.apply();
+  public setQuaternion4f(
+    x: number,
+    y: number,
+    z: number,
+    w: number,
+    flushTransform = false,
+  ): this {
+    this.updateTransformFromMatrix();
+
+    if (
+      this.quaternion.x !== x ||
+      this.quaternion.y !== y ||
+      this.quaternion.z !== z ||
+      this.quaternion.w !== w
+    ) {
+      this.quaternion.set(x, y, z, w);
+      this.needsUpdateMatrixFromTransform = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
+
     return this;
   }
 
-  setScale(v: Vector3): this {
-    this.scale.copy(v);
-    this.apply();
+  public setScale(source: Vector3, flushTransform = false): this {
+    this.updateTransformFromMatrix();
+
+    if (!this.scale.equals(source)) {
+      this.scale.copy(source);
+      this.needsUpdateMatrixFromTransform = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
+
     return this;
   }
 
-  setScale3f(x: number, y: number, z: number): this {
-    this.scale.set(x, y, z);
-    this.apply();
+  public setScale3f(
+    x: number,
+    y: number,
+    z: number,
+    flushTransform = false,
+  ): this {
+    this.updateTransformFromMatrix();
+
+    if (this.scale.x !== x || this.scale.y !== y || this.scale.z !== z) {
+      this.scale.set(x, y, z);
+      this.needsUpdateMatrixFromTransform = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
+
     return this;
   }
 
-  setTransform(m: Matrix4): this {
-    m.decompose(this.position, this.quaternion, this.scale);
-    this.apply();
+  public setTransform(source: Matrix4, flushTransform = false): this {
+    this.updateMatrixFromTransform();
+
+    if (!this.matrix.equals(source)) {
+      this.matrix.copy(source);
+      this.needsUpdateTransformFromMatrix = true;
+      this.needsUpdateInstancedMatrixFromLocalMatrix = true;
+
+      if (flushTransform) {
+        this.flushTransform();
+      }
+    }
     return this;
   }
 
-  destroy(): void {
-    if (this.index === -1) return;
-    this.pool.deallocate(this);
+  public flushTransform(): void {
+    if (this.handler < 0) {
+      return;
+    }
+
+    this.updateMatrixFromTransform();
+
+    if (this.needsUpdateInstancedMatrixFromLocalMatrix) {
+      this.pool["setTransformMatrix"](this.handler, this.matrix);
+      this.needsUpdateInstancedMatrixFromLocalMatrix = false;
+    }
   }
 
-  private apply(): void {
-    if (this.index === -1) return;
-    this.matrix.compose(this.position, this.quaternion, this.scale);
-    this["entry"].mesh.setMatrixAt(this.index, this.matrix);
-    this.pool["notifyUpdate"](this["entry"]);
+  private updateTransformFromMatrix(): void {
+    if (this.needsUpdateTransformFromMatrix) {
+      this.matrix.decompose(this.position, this.quaternion, this.scale);
+      this.needsUpdateTransformFromMatrix = false;
+    }
+  }
+
+  private updateMatrixFromTransform(): void {
+    if (this.needsUpdateMatrixFromTransform) {
+      this.matrix.compose(this.position, this.quaternion, this.scale);
+      this.needsUpdateMatrixFromTransform = false;
+      this.needsUpdateInstancedMatrixFromLocalMatrix = true;
+    }
   }
 }

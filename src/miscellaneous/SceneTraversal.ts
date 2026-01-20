@@ -169,6 +169,73 @@ export class SceneTraversal {
   }
 
   /**
+   * Enumerates unique materials, providing their mesh owners.
+   * Callback may return a replacement material.
+   * All replacements are applied after enumeration.
+   *
+   * @param object - Root object to start from
+   * @param callback - Called once per unique material with its owners.
+   *                   Return a material to replace it.
+   */
+  public static enumerateMaterialsUnique(
+    object: Object3D,
+    callback: (material: Material, owners: Mesh[]) => Material | undefined,
+  ): void {
+    const materialOwners = new Map<Material, Set<Mesh>>();
+
+    SceneTraversal.enumerateObjectsByType(object, Mesh, (mesh) => {
+      const materials = Array.isArray(mesh.material)
+        ? mesh.material
+        : [mesh.material];
+
+      for (const material of materials) {
+        let owners = materialOwners.get(material);
+        if (!owners) {
+          owners = new Set<Mesh>();
+          materialOwners.set(material, owners);
+        }
+        owners.add(mesh);
+      }
+    });
+
+    if (materialOwners.size === 0) {
+      return;
+    }
+
+    const replacements = new Map<Material, Material>();
+
+    for (const [material, ownersSet] of materialOwners) {
+      const owners = Array.from(ownersSet);
+      const replacement = callback(material, owners);
+
+      if (replacement && replacement !== material) {
+        replacements.set(material, replacement);
+      }
+    }
+
+    if (replacements.size === 0) {
+      return;
+    }
+
+    for (const [oldMaterial, newMaterial] of replacements) {
+      const ownersSet = materialOwners.get(oldMaterial);
+      if (!ownersSet) {
+        continue;
+      }
+
+      for (const mesh of ownersSet) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material = mesh.material.map((m) =>
+            m === oldMaterial ? newMaterial : m,
+          );
+        } else if (mesh.material === oldMaterial) {
+          mesh.material = newMaterial;
+        }
+      }
+    }
+  }
+
+  /**
    * Returns all objects matching filter criteria.
    *
    * @param object - Root object to start from
