@@ -10,5 +10,6 @@ export { StandardToPhongConverter } from "./materialConverters/StandardToPhongCo
 export { StandardToPhysicalConverter } from "./materialConverters/StandardToPhysicalConverter";
 export { StandardToToonConverter } from "./materialConverters/StandardToToonConverter";
 export { DualFovCamera } from "./miscellaneous/DualFovCamera";
+export { SceneSorter } from "./miscellaneous/SceneSorter";
 export { SceneTraversal } from "./miscellaneous/SceneTraversal";
 export { SkinnedMeshBaker } from "./miscellaneous/SkinnedMeshBaker";

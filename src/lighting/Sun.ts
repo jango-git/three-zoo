@@ -1,5 +1,15 @@
-import type { Texture } from "three";
-import { Box3, DirectionalLight, RGBAFormat, Spherical, Vector3 } from "three";
+import type { OrthographicCamera, Texture } from "three";
+import {
+  Box3,
+  DirectionalLight,
+  PerspectiveCamera,
+  RGBAFormat,
+  Spherical,
+  Vector3,
+} from "three";
+
+/** Radians-per-degree conversion factor */
+const DEG2RAD = Math.PI / 180;
 
 /** Number of color channels in RGBA format */
 const RGBA_CHANNEL_COUNT = 4;
@@ -142,6 +152,59 @@ export class Sun extends DirectionalLight {
   }
 
   /**
+   * Configures shadow camera frustum to cover the visible volume of a scene camera.
+   * Supports both perspective (frustum) and orthographic (box) cameras.
+   *
+   * @param sceneCamera - PerspectiveCamera or OrthographicCamera whose visible volume defines the shadow region
+   */
+  public configureShadowsForCamera(
+    sceneCamera: PerspectiveCamera | OrthographicCamera,
+  ): void {
+    const shadowCamera = this.shadow.camera;
+
+    this.target.updateWorldMatrix(true, false);
+    this.lookAt(this.target.getWorldPosition(this.tempVector3D0));
+    this.updateWorldMatrix(true, false);
+
+    sceneCamera.updateWorldMatrix(true, false);
+    if (sceneCamera instanceof PerspectiveCamera) {
+      this.computeFrustumPoints(sceneCamera);
+    } else {
+      this.computeOrthographicPoints(sceneCamera);
+    }
+
+    const inverseMatrix = this.matrixWorld.clone().invert();
+
+    const points: Vector3[] = [
+      this.tempVector3D0,
+      this.tempVector3D1,
+      this.tempVector3D2,
+      this.tempVector3D3,
+      this.tempVector3D4,
+      this.tempVector3D5,
+      this.tempVector3D6,
+      this.tempVector3D7,
+    ];
+
+    for (const point of points) {
+      point.applyMatrix4(inverseMatrix);
+    }
+
+    const newBox3 = this.tempBox3.setFromPoints(points);
+
+    shadowCamera.left = newBox3.min.x;
+    shadowCamera.bottom = newBox3.min.y;
+    shadowCamera.near = -newBox3.max.z;
+
+    shadowCamera.right = newBox3.max.x;
+    shadowCamera.top = newBox3.max.y;
+    shadowCamera.far = -newBox3.min.z;
+
+    shadowCamera.updateWorldMatrix(true, false);
+    shadowCamera.updateProjectionMatrix();
+  }
+
+  /**
    * Sets sun direction, color and intensity based on brightest point in HDR environment map.
    *
    * @param texture - HDR texture to analyze (must have image data)
@@ -244,5 +307,67 @@ export class Sun extends DirectionalLight {
     }
 
     return { index: maxIndex, luminance: maxLuminance };
+  }
+
+  /**
+   * Computes the 8 frustum corner points of a perspective camera in world space,
+   * storing them in the temporary Vector3 members.
+   *
+   * @param camera - The perspective camera to compute frustum points for
+   */
+  private computeFrustumPoints(camera: PerspectiveCamera): void {
+    const fovRad = camera.fov * DEG2RAD;
+    const halfTanFov = Math.tan(fovRad / 2);
+
+    const nearHalfH = camera.near * halfTanFov;
+    const nearHalfW = nearHalfH * camera.aspect;
+    const farHalfH = camera.far * halfTanFov;
+    const farHalfW = farHalfH * camera.aspect;
+
+    this.tempVector3D0.set(-nearHalfW, -nearHalfH, -camera.near);
+    this.tempVector3D1.set(nearHalfW, -nearHalfH, -camera.near);
+    this.tempVector3D2.set(-nearHalfW, nearHalfH, -camera.near);
+    this.tempVector3D3.set(nearHalfW, nearHalfH, -camera.near);
+
+    this.tempVector3D4.set(-farHalfW, -farHalfH, -camera.far);
+    this.tempVector3D5.set(farHalfW, -farHalfH, -camera.far);
+    this.tempVector3D6.set(-farHalfW, farHalfH, -camera.far);
+    this.tempVector3D7.set(farHalfW, farHalfH, -camera.far);
+
+    this.tempVector3D0.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D1.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D2.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D3.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D4.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D5.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D6.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D7.applyMatrix4(camera.matrixWorld);
+  }
+
+  /**
+   * Computes the 8 corner points of an orthographic camera's visible box in world space,
+   * storing them in the temporary Vector3 members.
+   *
+   * @param camera - The orthographic camera to compute box points for
+   */
+  private computeOrthographicPoints(camera: OrthographicCamera): void {
+    this.tempVector3D0.set(camera.left, camera.bottom, -camera.near);
+    this.tempVector3D1.set(camera.right, camera.bottom, -camera.near);
+    this.tempVector3D2.set(camera.left, camera.top, -camera.near);
+    this.tempVector3D3.set(camera.right, camera.top, -camera.near);
+
+    this.tempVector3D4.set(camera.left, camera.bottom, -camera.far);
+    this.tempVector3D5.set(camera.right, camera.bottom, -camera.far);
+    this.tempVector3D6.set(camera.left, camera.top, -camera.far);
+    this.tempVector3D7.set(camera.right, camera.top, -camera.far);
+
+    this.tempVector3D0.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D1.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D2.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D3.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D4.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D5.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D6.applyMatrix4(camera.matrixWorld);
+    this.tempVector3D7.applyMatrix4(camera.matrixWorld);
   }
 }
