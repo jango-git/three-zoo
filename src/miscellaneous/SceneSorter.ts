@@ -16,11 +16,13 @@ export class SceneSorter {
    * @param object - Root object to start from
    * @param point - Reference point to measure distances against
    * @param baseRenderOrder - Starting render order value
+   * @param reverseOrder - Back-to-front order: closer objects get higher renderOrder (for transparent meshes)
    */
   public static sortByDistanceToPoint(
     object: Object3D,
     point: Vector3,
     baseRenderOrder: number,
+    reverseOrder = false,
   ): void {
     object.updateWorldMatrix(true, true);
 
@@ -40,7 +42,7 @@ export class SceneSorter {
       const distanceB = TEMP_BOX3.setFromObject(b)
         .getCenter(TEMP_VECTOR)
         .distanceToSquared(point);
-      return distanceA - distanceB;
+      return reverseOrder ? distanceB - distanceA : distanceA - distanceB;
     });
 
     for (let i = 0; i < meshes.length; i++) {
