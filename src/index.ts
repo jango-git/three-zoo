@@ -13,3 +13,4 @@ export { DualFovCamera } from "./miscellaneous/DualFovCamera";
 export { SceneSorter } from "./miscellaneous/SceneSorter";
 export { SceneTraversal } from "./miscellaneous/SceneTraversal";
 export { SkinnedMeshBaker } from "./miscellaneous/SkinnedMeshBaker";
+export { TwoBoneIK } from "./miscellaneous/TwoBoneIK";
