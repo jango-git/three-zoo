@@ -1,16 +1,12 @@
 import type { AnimationClip, Object3D, SkinnedMesh } from "three";
 import { AnimationMixer, BufferAttribute, Mesh, Vector3 } from "three";
 
-/** Number of components per vertex */
 const COMPONENT_COUNT = 3;
 
-/** Converts skinned meshes to static meshes. */
 export class SkinnedMeshBaker {
   /**
-   * Converts skinned mesh to static mesh in current pose.
-   *
-   * @param skinnedMesh - Mesh to convert
-   * @returns Static mesh with baked positions
+   * Does not call `skeleton.update()` internally — skeleton must be up to date before calling.
+   * The returned mesh shares the original material (not cloned).
    */
   public static bakePose(skinnedMesh: SkinnedMesh): Mesh {
     const bakedGeometry = skinnedMesh.geometry.clone();
@@ -26,10 +22,7 @@ export class SkinnedMeshBaker {
       newPositions[i * COMPONENT_COUNT + 2] = target.z;
     }
 
-    bakedGeometry.setAttribute(
-      "position",
-      new BufferAttribute(newPositions, COMPONENT_COUNT),
-    );
+    bakedGeometry.setAttribute("position", new BufferAttribute(newPositions, COMPONENT_COUNT));
     bakedGeometry.computeVertexNormals();
     bakedGeometry.deleteAttribute("skinIndex");
     bakedGeometry.deleteAttribute("skinWeight");
@@ -40,13 +33,8 @@ export class SkinnedMeshBaker {
   }
 
   /**
-   * Bakes animation frame to static mesh.
-   *
-   * @param armature - Root object with bones
-   * @param skinnedMesh - Mesh to convert
-   * @param timeOffset - Time in seconds within animation
-   * @param clip - Animation clip for pose
-   * @returns Static mesh with baked positions
+   * @param armature - AnimationMixer root, typically the skeleton's root object.
+   * @param timeOffset - Seconds into the clip.
    */
   public static bakeAnimationFrame(
     armature: Object3D,

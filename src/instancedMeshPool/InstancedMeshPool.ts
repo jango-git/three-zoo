@@ -50,12 +50,7 @@ export class InstancedMeshPool {
 
   public sortMeshes(
     baseRenderOrder: number,
-    compare: (
-      a: InstancedMesh,
-      aTag: string,
-      b: InstancedMesh,
-      bTag: string,
-    ) => number,
+    compare: (a: InstancedMesh, aTag: string, b: InstancedMesh, bTag: string) => number,
   ): void {
     const sorted: InstancedMeshPoolEntry[] = [];
     for (const entry of this.entries.values()) {
@@ -69,9 +64,7 @@ export class InstancedMeshPool {
     }
   }
 
-  public sortInstances(
-    compare: (matrixA: Matrix4, matrixB: Matrix4, tag: string) => number,
-  ): void {
+  public sortInstances(compare: (matrixA: Matrix4, matrixB: Matrix4, tag: string) => number): void {
     for (const entry of this.entries.values()) {
       this.sortEntryInstances(entry, compare);
     }
@@ -86,11 +79,8 @@ export class InstancedMeshPool {
     this.descriptors.clear();
   }
 
-  protected allocate(
-    geometry: BufferGeometry,
-    material: Material,
-    tag: string,
-  ): number {
+  /** @internal */
+  public allocate(geometry: BufferGeometry, material: Material, tag: string): number {
     const entry = this.getOrCreateEntry(geometry, material, tag);
 
     if (entry.count === entry.capacity) {
@@ -109,7 +99,8 @@ export class InstancedMeshPool {
     return handler;
   }
 
-  protected deallocate(handler: number): void {
+  /** @internal */
+  public deallocate(handler: number): void {
     const descriptor = this.descriptors.get(handler);
     if (descriptor === undefined) {
       return;
@@ -138,7 +129,8 @@ export class InstancedMeshPool {
     entry.mesh.instanceMatrix.needsUpdate = true;
   }
 
-  protected setTransformMatrix(handler: number, matrix: Matrix4): void {
+  /** @internal */
+  public setTransformMatrix(handler: number, matrix: Matrix4): void {
     const descriptor = this.descriptors.get(handler);
     if (descriptor === undefined) {
       return;
@@ -148,10 +140,7 @@ export class InstancedMeshPool {
     descriptor.entry.mesh.instanceMatrix.needsUpdate = true;
   }
 
-  protected getTransformMatrix(
-    handler: number,
-    target: Matrix4,
-  ): Matrix4 | undefined {
+  protected getTransformMatrix(handler: number, target: Matrix4): Matrix4 | undefined {
     const descriptor = this.descriptors.get(handler);
     if (descriptor === undefined) {
       return undefined;
@@ -192,11 +181,7 @@ export class InstancedMeshPool {
 
   private growEntry(entry: InstancedMeshPoolEntry): void {
     const newCapacity = entry.capacity + this.capacityStep;
-    const newMesh = new InstancedMesh(
-      entry.geometry,
-      entry.material,
-      newCapacity,
-    );
+    const newMesh = new InstancedMesh(entry.geometry, entry.material, newCapacity);
 
     newMesh.frustumCulled = false;
     newMesh.renderOrder = entry.mesh.renderOrder;

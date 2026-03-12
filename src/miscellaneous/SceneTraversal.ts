@@ -1,30 +1,13 @@
 import type { Material, Object3D } from "three";
 import { Mesh } from "three";
 
-/**
- * Constructor type for runtime type checking.
- *
- * @template T - The type that the constructor creates
- */
+/** Abstract constructor type, used for `instanceof` filtering. */
 export type Constructor<T> = abstract new (...args: never[]) => T;
 
-/**
- * Static methods for traversing Three.js scene hierarchies.
- *
- * All methods use depth-first traversal.
- */
+/** All methods use depth-first traversal. */
 export class SceneTraversal {
-  /**
-   * Finds first object with exact name match.
-   *
-   * @param object - Root object to start from
-   * @param name - Name to search for (case-sensitive)
-   * @returns First matching object or undefined
-   */
-  public static getObjectByName(
-    object: Object3D,
-    name: string,
-  ): Object3D | undefined {
+  /** @param name - Case-sensitive. */
+  public static getObjectByName(object: Object3D, name: string): Object3D | undefined {
     if (object.name === name) {
       return object;
     }
@@ -39,17 +22,8 @@ export class SceneTraversal {
     return undefined;
   }
 
-  /**
-   * Finds first material with exact name match from mesh objects.
-   *
-   * @param object - Root object to start from
-   * @param name - Material name to search for (case-sensitive)
-   * @returns First matching material or undefined
-   */
-  public static getMaterialByName(
-    object: Object3D,
-    name: string,
-  ): Material | undefined {
+  /** @param name - Case-sensitive. */
+  public static getMaterialByName(object: Object3D, name: string): Material | undefined {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
         for (const material of object.material) {
@@ -72,14 +46,6 @@ export class SceneTraversal {
     return undefined;
   }
 
-  /**
-   * Executes callback for all objects of specified type.
-   *
-   * @template T - Type of objects to process
-   * @param object - Root object to start from
-   * @param type - Constructor to filter by
-   * @param callback - Function to execute for each matching object
-   */
   public static enumerateObjectsByType<T extends Object3D>(
     object: Object3D,
     type: Constructor<T>,
@@ -94,14 +60,7 @@ export class SceneTraversal {
     }
   }
 
-  /**
-   * Executes callback for all materials of specified type from mesh objects.
-   *
-   * @template T - Type of materials to process
-   * @param object - Root object to start from
-   * @param type - Constructor to filter by
-   * @param callback - Function to execute for each matching material
-   */
+  /** Only visits materials on `Mesh` nodes. */
   public static enumerateMaterialsByType<T extends Material>(
     object: Object3D,
     type: Constructor<T>,
@@ -124,16 +83,7 @@ export class SceneTraversal {
     }
   }
 
-  /**
-   * Executes callback for all objects in hierarchy.
-   *
-   * @param object - Root object to start from
-   * @param callback - Function to execute for each object
-   */
-  public static enumerateObjects(
-    object: Object3D,
-    callback: (object: Object3D) => void,
-  ): void {
+  public static enumerateObjects(object: Object3D, callback: (object: Object3D) => void): void {
     callback(object);
 
     for (const child of object.children) {
@@ -142,11 +92,8 @@ export class SceneTraversal {
   }
 
   /**
-   * Executes callback for all materials from mesh objects.
-   * If callback returns a material, replaces the original material.
-   *
-   * @param object - Root object to start from
-   * @param callback - Function to execute for each material. Return a material to replace.
+   * Only visits materials on `Mesh` nodes.
+   * Returning a material from the callback replaces the original.
    */
   public static enumerateMaterials(
     object: Object3D,
@@ -155,8 +102,7 @@ export class SceneTraversal {
     if (object instanceof Mesh) {
       if (Array.isArray(object.material)) {
         for (let i = 0; i < object.material.length; i++) {
-          object.material[i] =
-            callback(object.material[i], object) ?? object.material[i];
+          object.material[i] = callback(object.material[i], object) ?? object.material[i];
         }
       } else {
         object.material = callback(object.material, object) ?? object.material;
@@ -169,13 +115,8 @@ export class SceneTraversal {
   }
 
   /**
-   * Enumerates unique materials, providing their mesh owners.
-   * Callback may return a replacement material.
-   * All replacements are applied after enumeration.
-   *
-   * @param object - Root object to start from
-   * @param callback - Called once per unique material with its owners.
-   *                   Return a material to replace it.
+   * Deduplicates materials before invoking the callback.
+   * Replacements returned by the callback are applied after all callbacks complete.
    */
   public static enumerateMaterialsUnique(
     object: Object3D,
@@ -184,9 +125,7 @@ export class SceneTraversal {
     const materialOwners = new Map<Material, Set<Mesh>>();
 
     SceneTraversal.enumerateObjectsByType(object, Mesh, (mesh) => {
-      const materials = Array.isArray(mesh.material)
-        ? mesh.material
-        : [mesh.material];
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
       for (const material of materials) {
         let owners = materialOwners.get(material);
@@ -225,9 +164,7 @@ export class SceneTraversal {
 
       for (const mesh of ownersSet) {
         if (Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.map((m) =>
-            m === oldMaterial ? newMaterial : m,
-          );
+          mesh.material = mesh.material.map((m) => (m === oldMaterial ? newMaterial : m));
         } else if (mesh.material === oldMaterial) {
           mesh.material = newMaterial;
         }
@@ -235,13 +172,7 @@ export class SceneTraversal {
     }
   }
 
-  /**
-   * Returns all objects matching filter criteria.
-   *
-   * @param object - Root object to start from
-   * @param filter - RegExp for object names or predicate function
-   * @returns Array of matching objects
-   */
+  /** @param filter - RegExp tested against `object.name`, or a predicate. */
   public static filterObjects(
     object: Object3D,
     filter: RegExp | ((object: Object3D) => boolean),
@@ -265,13 +196,7 @@ export class SceneTraversal {
     return result;
   }
 
-  /**
-   * Returns all materials matching filter criteria from mesh objects.
-   *
-   * @param object - Root object to start from
-   * @param filter - RegExp for material names or predicate function
-   * @returns Array of matching materials
-   */
+  /** @param filter - RegExp tested against `material.name`, or a predicate. */
   public static filterMaterials(
     object: Object3D,
     filter: RegExp | ((object: Material) => boolean),
@@ -305,17 +230,7 @@ export class SceneTraversal {
     return result;
   }
 
-  /**
-   * Returns all mesh objects that use any of the specified materials.
-   *
-   * @param object - Root object to start from
-   * @param materials - Array of materials to search for
-   * @returns Array of mesh objects using the materials
-   */
-  public static findMaterialUsers(
-    object: Object3D,
-    materials: Material[],
-  ): Mesh[] {
+  public static findMaterialUsers(object: Object3D, materials: Material[]): Mesh[] {
     let result: Mesh[] = [];
 
     if (object instanceof Mesh) {
@@ -340,25 +255,18 @@ export class SceneTraversal {
     }
 
     for (const child of object.children) {
-      result = result.concat(
-        SceneTraversal.findMaterialUsers(child, materials),
-      );
+      result = result.concat(SceneTraversal.findMaterialUsers(child, materials));
     }
 
     return result;
   }
 
   /**
-   * Clones material by name and replaces all instances with the clone.
+   * Replaces all instances of the named material in the hierarchy with the clone.
    *
-   * @param object - Root object to start from
-   * @param name - Material name to search for (case-sensitive)
-   * @returns Cloned material or undefined if not found
+   * @param name - Case-sensitive.
    */
-  public static cloneMaterialByName(
-    object: Object3D,
-    name: string,
-  ): Material | undefined {
+  public static cloneMaterialByName(object: Object3D, name: string): Material | undefined {
     const originalMaterial = SceneTraversal.getMaterialByName(object, name);
 
     if (!originalMaterial) {
@@ -372,13 +280,6 @@ export class SceneTraversal {
     return clonedMaterial;
   }
 
-  /**
-   * Replaces all instances of a material with another material.
-   *
-   * @param object - Root object to start from
-   * @param oldMaterial - Material to replace
-   * @param newMaterial - Material to use as replacement
-   */
   private static replaceMaterial(
     object: Object3D,
     oldMaterial: Material,

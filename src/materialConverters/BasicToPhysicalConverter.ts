@@ -97,10 +97,7 @@ export class BasicToPhysicalConverter {
     }
   }
 
-  private static convertTextureMaps(
-    source: MeshBasicMaterial,
-    target: MeshPhysicalMaterial,
-  ): void {
+  private static convertTextureMaps(source: MeshBasicMaterial, target: MeshPhysicalMaterial): void {
     if (source.map) {
       target.map = source.map;
     }

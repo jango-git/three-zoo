@@ -20,12 +20,12 @@ export class InstancedMeshInstance {
     material: Material,
     tag = "",
   ) {
-    this.handler = this.pool["allocate"](geometry, material, tag);
+    this.handler = this.pool.allocate(geometry, material, tag);
   }
 
   public destroy(): void {
     if (this.handler >= 0) {
-      this.pool["deallocate"](this.handler);
+      this.pool.deallocate(this.handler);
       this.handler = -1;
     }
   }
@@ -49,19 +49,10 @@ export class InstancedMeshInstance {
     return this;
   }
 
-  public setPosition3f(
-    x: number,
-    y: number,
-    z: number,
-    flushTransform = false,
-  ): this {
+  public setPosition3f(x: number, y: number, z: number, flushTransform = false): this {
     this.updateTransformFromMatrix();
 
-    if (
-      this.position.x !== x ||
-      this.position.y !== y ||
-      this.position.z !== z
-    ) {
+    if (this.position.x !== x || this.position.y !== y || this.position.z !== z) {
       this.position.set(x, y, z);
       this.needsUpdateMatrixFromTransform = true;
 
@@ -88,13 +79,7 @@ export class InstancedMeshInstance {
     return this;
   }
 
-  public setQuaternion4f(
-    x: number,
-    y: number,
-    z: number,
-    w: number,
-    flushTransform = false,
-  ): this {
+  public setQuaternion4f(x: number, y: number, z: number, w: number, flushTransform = false): this {
     this.updateTransformFromMatrix();
 
     if (
@@ -129,12 +114,7 @@ export class InstancedMeshInstance {
     return this;
   }
 
-  public setScale3f(
-    x: number,
-    y: number,
-    z: number,
-    flushTransform = false,
-  ): this {
+  public setScale3f(x: number, y: number, z: number, flushTransform = false): this {
     this.updateTransformFromMatrix();
 
     if (this.scale.x !== x || this.scale.y !== y || this.scale.z !== z) {
@@ -172,7 +152,7 @@ export class InstancedMeshInstance {
     this.updateMatrixFromTransform();
 
     if (this.needsUpdateInstancedMatrixFromLocalMatrix) {
-      this.pool["setTransformMatrix"](this.handler, this.matrix);
+      this.pool.setTransformMatrix(this.handler, this.matrix);
       this.needsUpdateInstancedMatrixFromLocalMatrix = false;
     }
   }

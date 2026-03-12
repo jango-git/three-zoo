@@ -1,35 +1,7 @@
 {
   "name": "three-zoo",
-  "version": "0.11.18",
+  "version": "0.12.0",
   "description": "Some reusable bits for building things with Three.js ",
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "npm run clean && rollup -c",
-    "build:prod": "npm run clean && NODE_ENV=production rollup -c",
-    "prepublishOnly": "npm run build:prod"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "development": "./dist/index.js",
-        "production": "./dist/index.min.js",
-        "default": "./dist/index.min.js"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.min.js"
-      }
-    },
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist"
-  ],
-  "sideEffects": false,
   "keywords": [
     "three.js",
     "typescript",
@@ -39,9 +11,28 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jango-git/three-zoo.git"
+    "url": "git+https://github.com/jango-git/three-zoo.git"
   },
   "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && rollup -c",
+    "prepublishOnly": "npm run build"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "peerDependencies": {
     "three": ">=0.157.0 <0.180.0"
   },
