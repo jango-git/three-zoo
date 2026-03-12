@@ -113,8 +113,7 @@ export class TwoBoneIK {
       -this.perpendicularDirection.dot(this.chainDirection),
     );
 
-    // Guard: pole collinear with chain — perpendicular is degenerate.
-    // Pick an arbitrary axis perpendicular to chain.
+    // If the pole is collinear with the chain then we must choose an arbitrary axis perpendicular to the chain.
     if (this.perpendicularDirection.lengthSq() < this.epsilon) {
       this.perpendicularDirection.set(0, 1, 0);
       this.perpendicularDirection.addScaledVector(

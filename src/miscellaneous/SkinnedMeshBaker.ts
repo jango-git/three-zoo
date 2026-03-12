@@ -5,8 +5,7 @@ const COMPONENT_COUNT = 3;
 
 export class SkinnedMeshBaker {
   /**
-   * Does not call `skeleton.update()` internally — skeleton must be up to date before calling.
-   * The returned mesh shares the original material (not cloned).
+   * Does not call the skeleton update, assuming it is already in a state ready for baking.
    */
   public static bakePose(skinnedMesh: SkinnedMesh): Mesh {
     const bakedGeometry = skinnedMesh.geometry.clone();
