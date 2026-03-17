@@ -1,3 +1,5 @@
+export { AimChainIK } from "./IK/AimChainIK";
+export { TwoBoneIK } from "./IK/TwoBoneIK";
 export { InstancedMeshGroup } from "./instancedMeshPool/InstancedMeshGroup";
 export { InstancedMeshInstance } from "./instancedMeshPool/InstancedMeshInstance";
 export { InstancedMeshPool } from "./instancedMeshPool/InstancedMeshPool";
@@ -13,4 +15,3 @@ export { DualFovCamera } from "./miscellaneous/DualFovCamera";
 export { SceneSorter } from "./miscellaneous/SceneSorter";
 export { SceneTraversal } from "./miscellaneous/SceneTraversal";
 export { SkinnedMeshBaker } from "./miscellaneous/SkinnedMeshBaker";
-export { TwoBoneIK } from "./miscellaneous/TwoBoneIK";

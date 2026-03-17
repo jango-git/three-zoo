@@ -153,13 +153,11 @@ export class TwoBoneIK {
    * which constrains aim direction but not roll.
    */
   private twistBoneTowardPole(bone: Object3D, child: Object3D, poleAxis: Vector3): void {
-    const epsilon = this.epsilon;
-
     bone.getWorldPosition(this.bonePosition);
     child.getWorldPosition(this.childPosition);
 
     this.aimAxis.subVectors(this.childPosition, this.bonePosition);
-    if (this.aimAxis.lengthSq() < epsilon) {
+    if (this.aimAxis.lengthSq() < this.epsilon) {
       return;
     }
     this.aimAxis.normalize();
@@ -167,32 +165,30 @@ export class TwoBoneIK {
     bone.getWorldQuaternion(this.boneWorldQuaternion);
 
     this.currentUp.copy(poleAxis).applyQuaternion(this.boneWorldQuaternion);
-
     this.desiredUp.subVectors(this.polePosition, this.bonePosition);
     this.desiredUp.addScaledVector(this.aimAxis, -this.desiredUp.dot(this.aimAxis));
 
-    if (this.desiredUp.lengthSq() < epsilon) {
+    if (this.desiredUp.lengthSq() < this.epsilon) {
       return;
     }
 
     this.desiredUp.normalize();
-
     this.currentUp.addScaledVector(this.aimAxis, -this.currentUp.dot(this.aimAxis));
 
-    if (this.currentUp.lengthSq() < epsilon) {
+    if (this.currentUp.lengthSq() < this.epsilon) {
       console.warn(`TwoBoneIK: poleAxis is parallel to bone's aim axis - twist is undefined.`);
       return;
     }
     this.currentUp.normalize();
 
     let angle = Math.acos(MathUtils.clamp(this.currentUp.dot(this.desiredUp), -1, 1));
-
     this.currentDirection.crossVectors(this.currentUp, this.desiredUp);
+
     if (this.currentDirection.dot(this.aimAxis) < 0) {
       angle = -angle;
     }
 
-    if (Math.abs(angle) < epsilon) {
+    if (Math.abs(angle) < this.epsilon) {
       return;
     }
 
