@@ -33,14 +33,14 @@ npm install three-zoo
 Analytical two-bone IK solver. Chain: `root -> middle -> end`. Pole controls bend direction. Writes local quaternions to `root` and `middle`.
 
 ```typescript
-const ik = new TwoBoneIK(upperArm, foreArm, hand, poleObject, targetObject);
+const twoBoneIK = new TwoBoneIK(upperArm, foreArm, hand, poleObject, targetObject);
 
 // call after AnimationMixer.update() each frame
-ik.solve();
+twoBoneIK.solve();
 
 // tune pole twist per bone
-ik.rootPoleAxis.set(0, 1, 0);
-ik.middlePoleTwist = false;
+twoBoneIK.rootPoleAxis.set(0, 1, 0);
+twoBoneIK.middlePoleTwist = false;
 ```
 
 ### AimChainIK
@@ -48,13 +48,13 @@ ik.middlePoleTwist = false;
 Distributes aim rotation across a bone chain according to per-bone weights.
 
 ```typescript
-const ik = new AimChainIK([spine1, spine2, spine3, head]);
+const aimChainIK = new AimChainIK([spine1, spine2, spine3, head]);
 
-ik.curve = [0.2, 0.5, 0.8, 1.0]; // root gets least, tip gets most
-ik.weight = 0.8;                 // global blend
+aimChainIK.curve = [0.2, 0.5, 0.8, 1.0]; // root gets least, tip gets most
+aimChainIK.weight = 0.8;                 // global blend
 
 // sample directions before calling - mutates bone quaternions
-ik.solve(currentForward, targetDirection);
+aimChainIK.solve(currentForward, targetDirection);
 ```
 
 ---
@@ -123,16 +123,16 @@ All converters expose a single static `convert(material, options?)`. Common opti
 
 ```typescript
 // Standard -> unlit
-const basic = StandardToBasicConverter.convert(mat, { brightnessFactor: 1.3, combineEmissive: true });
+const basicMaterial = StandardToBasicConverter.convert(standardMaterial, { brightnessFactor: 1.3, combineEmissive: true });
 
 // Standard -> diffuse-only lit
-const lambert = StandardToLambertConverter.convert(mat);
-const phong   = StandardToPhongConverter.convert(mat);
-const toon    = StandardToToonConverter.convert(mat);
+const lambertMaterial  = StandardToLambertConverter.convert(standardMaterial);
+const phongMaterial    = StandardToPhongConverter.convert(standardMaterial);
+const toonMaterial     = StandardToToonConverter.convert(standardMaterial);
 
 // Standard <-> Physical
-const physical = StandardToPhysicalConverter.convert(mat);
-const standard = BasicToPhysicalConverter.convert(basicMat);
+const physicalMaterial  = StandardToPhysicalConverter.convert(standardMaterial);
+const standardMaterial2 = BasicToPhysicalConverter.convert(basicMaterial);
 ```
 
 ---
@@ -160,20 +160,20 @@ Static helpers for depth-first scene graph traversal.
 
 ```typescript
 // find by name
-const mesh = SceneTraversal.getObjectByName(scene, 'Player');
-const mat  = SceneTraversal.getMaterialByName(scene, 'Metal');
+const playerObject  = SceneTraversal.getObjectByName(scene, 'Player');
+const metalMaterial = SceneTraversal.getMaterialByName(scene, 'Metal');
 
 // filter by regex or predicate
-const enemies = SceneTraversal.filterObjects(scene, /^enemy_/);
-const glass   = SceneTraversal.filterMaterials(scene, /glass/i);
+const enemies         = SceneTraversal.filterObjects(scene, /^enemy_/);
+const glassMaterials  = SceneTraversal.filterMaterials(scene, /glass/i);
 
 // enumerate with callback
 SceneTraversal.enumerateMaterials(scene, (material) => {
   material.needsUpdate = true;
 });
 
-// find meshes that use a given material
-const users = SceneTraversal.findMaterialUsers(scene, /glass/i);
+// find meshes that use specific materials
+const glassMeshes = SceneTraversal.findMaterialUsers(scene, glassMaterials);
 ```
 
 ### SceneSorter
@@ -197,7 +197,7 @@ Bakes a `SkinnedMesh` to static geometry.
 const staticMesh = SkinnedMeshBaker.bakePose(skinnedMesh);
 
 // specific animation frame
-const frameMesh = SkinnedMeshBaker.bakeAnimationFrame(armature, skinnedMesh, 1.5, clip);
+const frameMesh = SkinnedMeshBaker.bakeAnimationFrame(armature, skinnedMesh, 1.5, animationClip);
 ```
 
 ---
