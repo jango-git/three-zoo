@@ -1,11 +1,10 @@
 <p align="center">
   <h1 align="center">🦁 🐘 🦊 three-zoo</h1>
-  <p align="center">Reusable Three.js utilities. ESM + TypeScript.</p>
+  <p align="center">Reusable Three.js utilities.</p>
 </p>
 
 <p align="center">
 <a href="https://www.npmjs.com/package/three-zoo"><img src="https://img.shields.io/npm/v/three-zoo.svg" alt="npm version"></a>
-<a href="https://bundlephobia.com/package/three-zoo"><img src="https://badgen.net/bundlephobia/min/three-zoo" alt="bundle size (min)"></a>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-%5E5.8.0-blue" alt="TypeScript"></a>
 <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-%5E0.175.0-green" alt="Three.js"></a>
@@ -52,7 +51,7 @@ Distributes aim rotation across a bone chain according to per-bone weights.
 const ik = new AimChainIK([spine1, spine2, spine3, head]);
 
 ik.curve = [0.2, 0.5, 0.8, 1.0]; // root gets least, tip gets most
-ik.weight = 0.8;                  // global blend
+ik.weight = 0.8;                 // global blend
 
 // sample directions before calling - mutates bone quaternions
 ik.solve(currentForward, targetDirection);
