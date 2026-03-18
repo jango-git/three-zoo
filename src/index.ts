@@ -1,5 +1,5 @@
-export { AimChainIK } from "./IK/AimChainIK";
-export { TwoBoneIK } from "./IK/TwoBoneIK";
+export { AimChainIK } from "./ik/AimChainIK";
+export { TwoBoneIK } from "./ik/TwoBoneIK";
 export { InstancedMeshGroup } from "./instancedMeshPool/InstancedMeshGroup";
 export { InstancedMeshInstance } from "./instancedMeshPool/InstancedMeshInstance";
 export { InstancedMeshPool } from "./instancedMeshPool/InstancedMeshPool";

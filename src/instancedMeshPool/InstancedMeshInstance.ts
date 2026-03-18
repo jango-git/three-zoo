@@ -1,4 +1,4 @@
-import type { BufferGeometry, Material } from "three";
+import type { BufferGeometry, InstancedMesh, Material } from "three";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import type { InstancedMeshPool } from "./InstancedMeshPool";
 
@@ -21,6 +21,24 @@ export class InstancedMeshInstance {
     tag = "",
   ) {
     this.handler = this.pool.allocate(geometry, material, tag);
+  }
+
+  public static fromInstancedMesh(
+    pool: InstancedMeshPool,
+    mesh: InstancedMesh<BufferGeometry, Material>,
+    tag = "",
+  ): InstancedMeshInstance[] {
+    const matrix = new Matrix4();
+    const instances: InstancedMeshInstance[] = [];
+
+    for (let i = 0; i < mesh.count; i++) {
+      const instance = new InstancedMeshInstance(pool, mesh.geometry, mesh.material, tag);
+      mesh.getMatrixAt(i, matrix);
+      instance.setTransform(matrix, true);
+      instances.push(instance);
+    }
+
+    return instances;
   }
 
   public destroy(): void {
