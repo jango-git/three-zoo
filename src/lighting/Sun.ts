@@ -244,7 +244,7 @@ export class Sun extends DirectionalLight {
     return { index: maxIndex, luminance: maxLuminance };
   }
 
-  /** Stores world-space frustum corners in `tempVector3D0`–`tempVector3D7`. */
+  /** Stores world-space frustum corners in `tempVector3D0`-`tempVector3D7`. */
   private computeFrustumPoints(camera: PerspectiveCamera): void {
     const fovRad = camera.fov * MathUtils.DEG2RAD;
     const halfTanFov = Math.tan(fovRad / 2);
@@ -274,7 +274,7 @@ export class Sun extends DirectionalLight {
     this.tempVector3D7.applyMatrix4(camera.matrixWorld);
   }
 
-  /** Stores world-space frustum corners in `tempVector3D0`–`tempVector3D7`. */
+  /** Stores world-space frustum corners in `tempVector3D0`-`tempVector3D7`. */
   private computeOrthographicPoints(camera: OrthographicCamera): void {
     this.tempVector3D0.set(camera.left, camera.bottom, -camera.near);
     this.tempVector3D1.set(camera.right, camera.bottom, -camera.near);

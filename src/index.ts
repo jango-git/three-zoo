@@ -1,3 +1,11 @@
+export { EnhancedPerspectiveCamera } from "./camera/EnhancedPerspectiveCamera";
+export { FovPolicy } from "./camera/fovPolicies/FovPolicy";
+export { FovPolicyCover } from "./camera/fovPolicies/FovPolicyCover";
+export { FovPolicyFit } from "./camera/fovPolicies/FovPolicyFit";
+export { FovPolicyFixedHorizontal } from "./camera/fovPolicies/FovPolicyFixedHorizontal";
+export { FovPolicyFixedVertical } from "./camera/fovPolicies/FovPolicyFixedVertical";
+export { FovPolicyHybrid } from "./camera/fovPolicies/FovPolicyHybrid";
+export { FovPolicyHybridInverted } from "./camera/fovPolicies/FovPolicyHybridInverted";
 export { AimChainIK } from "./ik/AimChainIK";
 export { TwoBoneIK } from "./ik/TwoBoneIK";
 export { InstancedMeshGroup } from "./instancedMeshPool/InstancedMeshGroup";
@@ -11,7 +19,6 @@ export { StandardToLambertConverter } from "./materialConverters/StandardToLambe
 export { StandardToPhongConverter } from "./materialConverters/StandardToPhongConverter";
 export { StandardToPhysicalConverter } from "./materialConverters/StandardToPhysicalConverter";
 export { StandardToToonConverter } from "./materialConverters/StandardToToonConverter";
-export { DualFovCamera } from "./miscellaneous/DualFovCamera";
 export { SceneSorter } from "./miscellaneous/SceneSorter";
 export { SceneTraversal } from "./miscellaneous/SceneTraversal";
 export { SkinnedMeshBaker } from "./miscellaneous/SkinnedMeshBaker";

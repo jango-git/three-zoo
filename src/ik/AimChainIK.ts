@@ -15,7 +15,7 @@ export class AimChainIK {
 
   /**
    * Global blend weight. 0 = solver has no effect, 1 = full effect.
-   * Clamped to 0–1 internally.
+   * Clamped to 0-1 internally.
    */
   public weight = 1;
 
@@ -24,7 +24,7 @@ export class AimChainIK {
    *
    * `[1, 1, 1, 1]` = uniform. `[0.2, 0.5, 0.8, 1.0]` = root gets least, tip gets most.
    *
-   * Compared by reference — mutating values in-place won't trigger
+   * Compared by reference - mutating values in-place won't trigger
    * renormalization. Assign a new array to update.
    *
    * Length must match bone count; mismatches throw on `solve()`.
@@ -56,7 +56,7 @@ export class AimChainIK {
    *
    * Both vectors are in world space and are not mutated.
    *
-   * Sample directions **before** calling — this method mutates bone quaternions,
+   * Sample directions **before** calling - this method mutates bone quaternions,
    * so any direction derived from the chain will be stale after the call.
    *
    * @param currentDirection - Where the chain currently aims.

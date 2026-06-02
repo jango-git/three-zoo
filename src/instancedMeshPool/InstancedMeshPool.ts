@@ -70,7 +70,7 @@ export class InstancedMeshPool {
     }
   }
 
-  public dispose(): void {
+  public destroy(): void {
     for (const entry of this.entries.values()) {
       this.scene.remove(entry.mesh);
       entry.mesh.dispose();
@@ -140,7 +140,8 @@ export class InstancedMeshPool {
     descriptor.entry.mesh.instanceMatrix.needsUpdate = true;
   }
 
-  protected getTransformMatrix(handler: number, target: Matrix4): Matrix4 | undefined {
+  /** @internal */
+  public getTransformMatrix(handler: number, target: Matrix4): Matrix4 | undefined {
     const descriptor = this.descriptors.get(handler);
     if (descriptor === undefined) {
       return undefined;
@@ -225,6 +226,7 @@ export class InstancedMeshPool {
       return result;
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- needsReorder is set by the sort callback
     if (!needsReorder) {
       return;
     }

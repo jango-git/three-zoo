@@ -23,6 +23,10 @@ export class InstancedMeshInstance {
     this.handler = this.pool.allocate(geometry, material, tag);
   }
 
+  public get isAlive(): boolean {
+    return this.handler >= 0;
+  }
+
   public static fromInstancedMesh(
     pool: InstancedMeshPool,
     mesh: InstancedMesh<BufferGeometry, Material>,
@@ -42,14 +46,10 @@ export class InstancedMeshInstance {
   }
 
   public destroy(): void {
-    if (this.handler >= 0) {
+    if (this.isAlive) {
       this.pool.deallocate(this.handler);
       this.handler = -1;
     }
-  }
-
-  public isDestroyed(): boolean {
-    return this.handler < 0;
   }
 
   public setPosition(source: Vector3, flushTransform = false): this {
@@ -163,7 +163,7 @@ export class InstancedMeshInstance {
   }
 
   public flushTransform(): void {
-    if (this.handler < 0) {
+    if (!this.isAlive) {
       return;
     }
 
