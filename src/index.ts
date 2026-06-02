@@ -19,6 +19,7 @@ export { StandardToLambertConverter } from "./materialConverters/StandardToLambe
 export { StandardToPhongConverter } from "./materialConverters/StandardToPhongConverter";
 export { StandardToPhysicalConverter } from "./materialConverters/StandardToPhysicalConverter";
 export { StandardToToonConverter } from "./materialConverters/StandardToToonConverter";
+export { SceneResolver } from "./miscellaneous/SceneResolver";
 export { SceneSorter } from "./miscellaneous/SceneSorter";
 export { SceneTraversal } from "./miscellaneous/SceneTraversal";
 export { SkinnedMeshBaker } from "./miscellaneous/SkinnedMeshBaker";
