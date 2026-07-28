@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Some reusable bits for building things with Three.js",
   "keywords": [
     "three.js",
@@ -41,7 +41,7 @@
     }
   },
   "peerDependencies": {
-    "three": ">=0.157.0 <0.184.0"
+    "three": ">=0.157.0 <=0.185.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",
