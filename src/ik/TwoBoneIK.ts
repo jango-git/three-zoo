@@ -176,6 +176,7 @@ export class TwoBoneIK {
     this.currentUp.addScaledVector(this.aimAxis, -this.currentUp.dot(this.aimAxis));
 
     if (this.currentUp.lengthSq() < this.epsilon) {
+      // eslint-disable-next-line no-console -- reports a degenerate pole setup the caller must fix
       console.warn(`TwoBoneIK: poleAxis is parallel to bone's aim axis - twist is undefined.`);
       return;
     }

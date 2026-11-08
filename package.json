@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "description": "Some reusable bits for building things with Three.js",
   "keywords": [
     "three.js",
@@ -20,15 +20,22 @@
     "type": "git",
     "url": "git+https://github.com/jango-git/three-zoo.git"
   },
+  "bugs": {
+    "url": "https://github.com/jango-git/three-zoo/issues"
+  },
+  "homepage": "https://github.com/jango-git/three-zoo#readme",
   "type": "module",
   "sideEffects": false,
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && rollup -c",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "lint": "eslint src",
+    "format": "prettier --write . && eslint src --fix",
     "prepublishOnly": "npm run build"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
@@ -36,23 +43,20 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "three": ">=0.157.0 <=0.185.0"
+    "three": ">=0.157.0 <0.180.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
     "@types/three": "^0.157.0",
-    "@typescript-eslint/eslint-plugin": "^8.32.0",
-    "@typescript-eslint/parser": "^8.32.0",
-    "eslint": "^9.26.0",
-    "rollup": "^4.40.2",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "ts-transformer-minify-privates": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "eslint": "^10.14.0",
+    "prettier": "^3.9.10",
     "typescript": "^5.8.3"
   }
 }

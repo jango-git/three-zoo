@@ -1,5 +1,5 @@
 import { Object3D } from "three";
-import type { InstancedMeshInstance } from "./InstancedMeshInstance";
+import type { InstancedMeshInstance } from "./InstancedMeshInstance.js";
 
 export class InstancedMeshGroup extends Object3D {
   constructor(private readonly instances: InstancedMeshInstance[]) {

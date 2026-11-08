@@ -58,7 +58,7 @@ export class StandardToLambertConverter {
     target.vertexColors = source.vertexColors;
     target.flatShading = source.flatShading;
 
-    if (config.copyUserData && source.userData) {
+    if (config.copyUserData) {
       target.userData = { ...source.userData };
     }
   }
@@ -68,24 +68,20 @@ export class StandardToLambertConverter {
     target: MeshLambertMaterial,
     config: Required<StandardToLambertConverterOptions>,
   ): void {
-    if (source.color) {
-      target.color = source.color.clone();
+    target.color = source.color.clone();
 
-      if (source.metalness > 0) {
-        const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
-        target.color.multiplyScalar(metalnessFactor);
-      }
-
-      if (source.roughness > ROUGHNESS_THRESHOLD) {
-        const roughnessFactor =
-          config.roughnessColorFactor + source.roughness * ROUGHNESS_COLOR_ADJUSTMENT;
-        target.color.multiplyScalar(roughnessFactor);
-      }
+    if (source.metalness > 0) {
+      const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
+      target.color.multiplyScalar(metalnessFactor);
     }
 
-    if (source.emissive) {
-      target.emissive = source.emissive.clone();
+    if (source.roughness > ROUGHNESS_THRESHOLD) {
+      const roughnessFactor =
+        config.roughnessColorFactor + source.roughness * ROUGHNESS_COLOR_ADJUSTMENT;
+      target.color.multiplyScalar(roughnessFactor);
     }
+
+    target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
   }
 
@@ -103,9 +99,7 @@ export class StandardToLambertConverter {
 
     if (source.normalMap) {
       target.normalMap = source.normalMap;
-      if (source.normalScale) {
-        target.normalScale = source.normalScale.clone();
-      }
+      target.normalScale = source.normalScale.clone();
     }
 
     if (source.lightMap) {

@@ -53,7 +53,7 @@ export class StandardToToonConverter {
     target.wireframeLinewidth = source.wireframeLinewidth;
     target.vertexColors = source.vertexColors;
 
-    if (config.copyUserData && source.userData) {
+    if (config.copyUserData) {
       target.userData = { ...source.userData };
     }
   }
@@ -62,12 +62,8 @@ export class StandardToToonConverter {
     source: MeshStandardMaterial,
     target: MeshToonMaterial,
   ): void {
-    if (source.color) {
-      target.color = source.color.clone();
-    }
-    if (source.emissive) {
-      target.emissive = source.emissive.clone();
-    }
+    target.color = source.color.clone();
+    target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
   }
 
@@ -83,9 +79,7 @@ export class StandardToToonConverter {
     if (source.normalMap) {
       target.normalMap = source.normalMap;
       target.normalMapType = source.normalMapType;
-      if (source.normalScale) {
-        target.normalScale = source.normalScale.clone();
-      }
+      target.normalScale = source.normalScale.clone();
     }
 
     if (source.bumpMap) {

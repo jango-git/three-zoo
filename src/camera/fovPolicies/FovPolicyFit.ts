@@ -1,5 +1,5 @@
-import { clampFov, verticalFovFromHorizontal } from "./fovMath";
-import { FovPolicy } from "./FovPolicy";
+import { clampFov, verticalFovFromHorizontal } from "./fovMath.js";
+import { FovPolicy } from "./FovPolicy.js";
 
 /**
  * Fills the viewport with the target frustum at any aspect ratio.

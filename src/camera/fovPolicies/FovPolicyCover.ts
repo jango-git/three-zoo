@@ -1,5 +1,5 @@
-import { clampFov, verticalFovFromHorizontal } from "./fovMath";
-import { FovPolicy } from "./FovPolicy";
+import { clampFov, verticalFovFromHorizontal } from "./fovMath.js";
+import { FovPolicy } from "./FovPolicy.js";
 
 /**
  * Guarantees the target frustum is fully visible at any aspect ratio.

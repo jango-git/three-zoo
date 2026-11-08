@@ -1,5 +1,5 @@
-import { clampFov } from "./fovMath";
-import { FovPolicy } from "./FovPolicy";
+import { clampFov } from "./fovMath.js";
+import { FovPolicy } from "./FovPolicy.js";
 
 /** Keeps the vertical FOV constant regardless of aspect (default three.js behavior). */
 export class FovPolicyFixedVertical extends FovPolicy {

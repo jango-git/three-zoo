@@ -62,7 +62,7 @@ export class StandardToPhysicalConverter {
     target.vertexColors = source.vertexColors;
     target.flatShading = source.flatShading;
 
-    if (config.copyUserData && source.userData) {
+    if (config.copyUserData) {
       target.userData = { ...source.userData };
     }
   }
@@ -71,12 +71,8 @@ export class StandardToPhysicalConverter {
     source: MeshStandardMaterial,
     target: MeshPhysicalMaterial,
   ): void {
-    if (source.color) {
-      target.color = source.color.clone();
-    }
-    if (source.emissive) {
-      target.emissive = source.emissive.clone();
-    }
+    target.color = source.color.clone();
+    target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
 
     target.metalness = source.metalness;
@@ -100,9 +96,7 @@ export class StandardToPhysicalConverter {
     if (source.normalMap) {
       target.normalMap = source.normalMap;
       target.normalMapType = source.normalMapType;
-      if (source.normalScale) {
-        target.normalScale = source.normalScale.clone();
-      }
+      target.normalScale = source.normalScale.clone();
     }
 
     if (source.bumpMap) {

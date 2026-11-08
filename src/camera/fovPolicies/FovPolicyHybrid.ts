@@ -1,5 +1,5 @@
-import { clampFov, verticalFovFromHorizontal } from "./fovMath";
-import { FovPolicy } from "./FovPolicy";
+import { clampFov, verticalFovFromHorizontal } from "./fovMath.js";
+import { FovPolicy } from "./FovPolicy.js";
 
 /**
  * Preserves the horizontal FOV in landscape (aspect > 1) and the vertical FOV in portrait.

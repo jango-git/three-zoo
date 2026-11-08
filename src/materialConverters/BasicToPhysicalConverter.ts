@@ -16,12 +16,15 @@ export interface BasicToPhysicalConverterOptions {
   emissiveIntensity: number;
 }
 
+type BasicToPhysicalConverterConfig = Partial<BasicToPhysicalConverterOptions> &
+  Pick<BasicToPhysicalConverterOptions, "preserveName" | "copyUserData" | "disposeOriginal">;
+
 export class BasicToPhysicalConverter {
   public static convert(
     material: MeshBasicMaterial,
     options: Partial<BasicToPhysicalConverterOptions> = {},
   ): MeshPhysicalMaterial {
-    const config: Partial<BasicToPhysicalConverterOptions> = {
+    const config: BasicToPhysicalConverterConfig = {
       preserveName: true,
       copyUserData: true,
       disposeOriginal: false,
@@ -47,7 +50,7 @@ export class BasicToPhysicalConverter {
   private static copyBasicProperties(
     source: MeshBasicMaterial,
     target: MeshPhysicalMaterial,
-    config: Partial<BasicToPhysicalConverterOptions>,
+    config: BasicToPhysicalConverterConfig,
   ): void {
     if (config.preserveName) {
       target.name = source.name;
@@ -62,7 +65,7 @@ export class BasicToPhysicalConverter {
     target.wireframeLinejoin = source.wireframeLinejoin;
     target.vertexColors = source.vertexColors;
 
-    if (config.copyUserData && source.userData) {
+    if (config.copyUserData) {
       target.userData = { ...source.userData };
     }
   }
@@ -70,11 +73,9 @@ export class BasicToPhysicalConverter {
   private static convertColorAndPBRProperties(
     source: MeshBasicMaterial,
     target: MeshPhysicalMaterial,
-    config: Partial<BasicToPhysicalConverterOptions>,
+    config: BasicToPhysicalConverterConfig,
   ): void {
-    if (source.color) {
-      target.color = source.color.clone();
-    }
+    target.color = source.color.clone();
 
     if (config.emissive !== undefined) {
       if (config.emissive instanceof Color) {
@@ -141,7 +142,7 @@ export class BasicToPhysicalConverter {
 
   private static applyPhysicalProperties(
     target: MeshPhysicalMaterial,
-    config: Partial<BasicToPhysicalConverterOptions>,
+    config: BasicToPhysicalConverterConfig,
   ): void {
     if (config.clearcoat !== undefined) {
       target.clearcoat = config.clearcoat;

@@ -59,7 +59,7 @@ export class StandardToPhongConverter {
     target.vertexColors = source.vertexColors;
     target.flatShading = source.flatShading;
 
-    if (config.copyUserData && source.userData) {
+    if (config.copyUserData) {
       target.userData = { ...source.userData };
     }
   }
@@ -69,18 +69,16 @@ export class StandardToPhongConverter {
     target: MeshPhongMaterial,
     config: Required<StandardToPhongConverterOptions>,
   ): void {
-    if (source.color) {
-      target.color = source.color.clone();
+    target.color = source.color.clone();
 
-      if (source.metalness > 0) {
-        const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
-        target.color.multiplyScalar(metalnessFactor);
-      }
+    if (source.metalness > 0) {
+      const metalnessFactor = 1 - source.metalness * METALNESS_DARKNESS_FACTOR;
+      target.color.multiplyScalar(metalnessFactor);
     }
 
     target.shininess = (1 - source.roughness) * config.maxShininess;
 
-    if (source.metalness > 0 && source.color) {
+    if (source.metalness > 0) {
       target.specular = source.color
         .clone()
         .multiplyScalar(source.metalness * config.specularIntensity);
@@ -89,9 +87,7 @@ export class StandardToPhongConverter {
       target.specular = new Color(specularValue, specularValue, specularValue);
     }
 
-    if (source.emissive) {
-      target.emissive = source.emissive.clone();
-    }
+    target.emissive = source.emissive.clone();
     target.emissiveIntensity = source.emissiveIntensity;
   }
 
@@ -106,9 +102,7 @@ export class StandardToPhongConverter {
 
     if (source.normalMap) {
       target.normalMap = source.normalMap;
-      if (source.normalScale) {
-        target.normalScale = source.normalScale.clone();
-      }
+      target.normalScale = source.normalScale.clone();
     }
 
     if (source.bumpMap) {

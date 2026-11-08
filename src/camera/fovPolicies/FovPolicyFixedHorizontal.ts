@@ -1,5 +1,5 @@
-import { clampFov, verticalFovFromHorizontal } from "./fovMath";
-import { FovPolicy } from "./FovPolicy";
+import { clampFov, verticalFovFromHorizontal } from "./fovMath.js";
+import { FovPolicy } from "./FovPolicy.js";
 
 /** Keeps the horizontal FOV constant; derives the vertical FOV from the aspect ratio. */
 export class FovPolicyFixedHorizontal extends FovPolicy {

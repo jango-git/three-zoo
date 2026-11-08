@@ -57,7 +57,7 @@ export class StandardToBasicConverter {
     target.wireframeLinewidth = source.wireframeLinewidth;
     target.vertexColors = source.vertexColors;
 
-    if (config.copyUserData && source.userData) {
+    if (config.copyUserData) {
       target.userData = { ...source.userData };
     }
   }
@@ -67,26 +67,24 @@ export class StandardToBasicConverter {
     target: MeshBasicMaterial,
     config: Required<StandardToBasicConverterOptions>,
   ): void {
-    if (source.color) {
-      target.color = source.color.clone();
-      target.color.multiplyScalar(config.brightnessFactor);
+    target.color = source.color.clone();
+    target.color.multiplyScalar(config.brightnessFactor);
 
-      if (source.metalness > 0) {
-        const metalnessBrightness = 1 + source.metalness * METALNESS_BRIGHTNESS_FACTOR;
-        target.color.multiplyScalar(metalnessBrightness);
-      }
-
-      if (config.combineEmissive && source.emissive) {
-        const emissiveContribution = source.emissive
-          .clone()
-          .multiplyScalar(source.emissiveIntensity * EMISSIVE_CONTRIBUTION_FACTOR);
-        target.color.add(emissiveContribution);
-      }
-
-      target.color.r = Math.min(target.color.r, 1.0);
-      target.color.g = Math.min(target.color.g, 1.0);
-      target.color.b = Math.min(target.color.b, 1.0);
+    if (source.metalness > 0) {
+      const metalnessBrightness = 1 + source.metalness * METALNESS_BRIGHTNESS_FACTOR;
+      target.color.multiplyScalar(metalnessBrightness);
     }
+
+    if (config.combineEmissive) {
+      const emissiveContribution = source.emissive
+        .clone()
+        .multiplyScalar(source.emissiveIntensity * EMISSIVE_CONTRIBUTION_FACTOR);
+      target.color.add(emissiveContribution);
+    }
+
+    target.color.r = Math.min(target.color.r, 1.0);
+    target.color.g = Math.min(target.color.g, 1.0);
+    target.color.b = Math.min(target.color.b, 1.0);
   }
 
   private static convertTextureMaps(source: MeshStandardMaterial, target: MeshBasicMaterial): void {

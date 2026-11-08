@@ -1,6 +1,6 @@
 import type { Object3D } from "three";
 import { Box3, Mesh, Vector3 } from "three";
-import { SceneTraversal } from "./SceneTraversal";
+import { SceneTraversal } from "./SceneTraversal.js";
 
 const TEMP_VECTOR = new Vector3();
 const TEMP_BOX3 = new Box3();
