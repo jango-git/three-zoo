@@ -27,6 +27,7 @@ interface InstancedMeshPoolEntry {
 
 const TEMP_MATRIX_A = new Matrix4();
 const TEMP_MATRIX_B = new Matrix4();
+const IDENTITY_MATRIX = new Matrix4();
 
 export class InstancedMeshPool {
   private readonly initialCapacity: number;
@@ -93,6 +94,9 @@ export class InstancedMeshPool {
     entry.handlers[index] = handler;
     entry.count++;
     entry.mesh.count = entry.count;
+
+    entry.mesh.setMatrixAt(index, IDENTITY_MATRIX);
+    entry.mesh.instanceMatrix.needsUpdate = true;
 
     this.descriptors.set(handler, { entry, index });
 
@@ -214,19 +218,20 @@ export class InstancedMeshPool {
       items.push({ originalIndex: i, handler: entry.handlers[i] });
     }
 
-    let needsReorder = false;
-
     items.sort((a, b) => {
       entry.mesh.getMatrixAt(a.originalIndex, TEMP_MATRIX_A);
       entry.mesh.getMatrixAt(b.originalIndex, TEMP_MATRIX_B);
-      const result = compare(TEMP_MATRIX_A, TEMP_MATRIX_B, entry.tag);
-      if (result > 0) {
-        needsReorder = true;
-      }
-      return result;
+      return compare(TEMP_MATRIX_A, TEMP_MATRIX_B, entry.tag);
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- needsReorder is set by the sort callback
+    let needsReorder = false;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].originalIndex !== i) {
+        needsReorder = true;
+        break;
+      }
+    }
+
     if (!needsReorder) {
       return;
     }

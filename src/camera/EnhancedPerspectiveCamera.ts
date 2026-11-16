@@ -1,5 +1,6 @@
 import type { BufferAttribute, SkinnedMesh } from "three";
 import { PerspectiveCamera, Vector3 } from "three";
+
 import { clampFov } from "./fovPolicies/fovMath.js";
 import type { FovPolicy } from "./fovPolicies/FovPolicy.js";
 

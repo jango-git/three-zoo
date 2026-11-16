@@ -16,6 +16,14 @@ export class TwoBoneIK {
   public epsilon = 1e-5;
 
   /**
+   * Blend weight. 0 = solver has no effect, 1 = full effect. Clamped to 0-1 internally.
+   *
+   * In between, the local rotations of `root` and `middle` are slerped from their pose before
+   * `solve()` to the solved one.
+   */
+  public weight = 1;
+
+  /**
    * Twists the root bone around its aim axis so that `rootPoleAxis` aligns toward the pole.
    */
   public rootPoleTwist = true;
@@ -23,6 +31,10 @@ export class TwoBoneIK {
   /**
    * Root bone's local-space axis aligned toward the pole when `rootPoleTwist` is enabled.
    * Default: `(0, 1, 0)`.
+   *
+   * Must not be parallel to the bone's own axis toward its child, or the twist is undefined and
+   * `solve()` skips it with a one-time warning. Mixamo rigs point local Y along every bone, so
+   * they need another axis here, e.g. the bone's backward direction in the rest pose.
    */
   public rootPoleAxis: Vector3 = new Vector3(0, 1, 0);
 
@@ -34,6 +46,10 @@ export class TwoBoneIK {
   /**
    * Middle bone's local-space axis aligned toward the pole when `middlePoleTwist` is enabled.
    * Default: `(0, 1, 0)`.
+   *
+   * Must not be parallel to the bone's own axis toward its child, or the twist is undefined and
+   * `solve()` skips it with a one-time warning. Mixamo rigs point local Y along every bone, so
+   * they need another axis here, e.g. the bone's backward direction in the rest pose.
    */
   public middlePoleAxis: Vector3 = new Vector3(0, 1, 0);
 
@@ -60,6 +76,10 @@ export class TwoBoneIK {
   private readonly boneWorldQuaternion: Quaternion = new Quaternion();
   private readonly parentWorldQuaternion: Quaternion = new Quaternion();
   private readonly twistRotation: Quaternion = new Quaternion();
+  private readonly rootRestQuaternion: Quaternion = new Quaternion();
+  private readonly middleRestQuaternion: Quaternion = new Quaternion();
+
+  private parallelPoleAxisWarned = false;
 
   constructor(
     /** First bone in the chain (e.g. upper leg, upper arm). */
@@ -74,13 +94,33 @@ export class TwoBoneIK {
     public target?: Object3D,
   ) {}
 
-  /** No-op when `target` is undefined. */
+  /** No-op when `target` is undefined or `weight` is 0. */
   public solve(): void {
-    if (!this.target) {
+    const effectiveWeight = MathUtils.clamp(this.weight, 0, 1);
+    if (!this.target || effectiveWeight < this.epsilon) {
       return;
     }
 
-    this.target.getWorldPosition(this.targetPosition);
+    const blended = effectiveWeight < 1 - this.epsilon;
+    if (blended) {
+      this.rootRestQuaternion.copy(this.root.quaternion);
+      this.middleRestQuaternion.copy(this.middle.quaternion);
+    }
+
+    this.solveFull(this.target);
+
+    if (blended) {
+      this.root.quaternion.copy(
+        this.rootRestQuaternion.slerp(this.root.quaternion, effectiveWeight),
+      );
+      this.middle.quaternion.copy(
+        this.middleRestQuaternion.slerp(this.middle.quaternion, effectiveWeight),
+      );
+    }
+  }
+
+  private solveFull(target: Object3D): void {
+    target.getWorldPosition(this.targetPosition);
     this.pole.getWorldPosition(this.polePosition);
     this.root.getWorldPosition(this.rootPosition);
     this.middle.getWorldPosition(this.middlePosition);
@@ -176,8 +216,11 @@ export class TwoBoneIK {
     this.currentUp.addScaledVector(this.aimAxis, -this.currentUp.dot(this.aimAxis));
 
     if (this.currentUp.lengthSq() < this.epsilon) {
-      // eslint-disable-next-line no-console -- reports a degenerate pole setup the caller must fix
-      console.warn(`TwoBoneIK: poleAxis is parallel to bone's aim axis - twist is undefined.`);
+      if (!this.parallelPoleAxisWarned) {
+        this.parallelPoleAxisWarned = true;
+        // eslint-disable-next-line no-console -- reports a degenerate pole setup the caller must fix
+        console.warn(`TwoBoneIK: poleAxis is parallel to bone's aim axis - twist is undefined.`);
+      }
       return;
     }
     this.currentUp.normalize();

@@ -1,6 +1,6 @@
 {
   "name": "three-zoo",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Some reusable bits for building things with Three.js",
   "keywords": [
     "three.js",
@@ -14,17 +14,31 @@
     "scene",
     "lighting"
   ],
-  "author": "jango",
-  "license": "MIT",
+  "homepage": "https://github.com/jango-git/three-zoo#readme",
+  "bugs": {
+    "url": "https://github.com/jango-git/three-zoo/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jango-git/three-zoo.git"
   },
-  "bugs": {
-    "url": "https://github.com/jango-git/three-zoo/issues"
-  },
-  "homepage": "https://github.com/jango-git/three-zoo#readme",
+  "license": "MIT",
+  "author": "jango",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
   "scripts": {
     "clean": "rm -rf dist",
@@ -33,29 +47,15 @@
     "format": "prettier --write . && eslint src --fix",
     "prepublishOnly": "npm run build"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./package.json": "./package.json"
-  },
   "peerDependencies": {
-    "three": ">=0.157.0 <0.180.0"
+    "three": ">=0.157.0 <0.188.0"
   },
   "devDependencies": {
     "@types/three": "^0.157.0",
     "@typescript-eslint/eslint-plugin": "^8.72.1",
     "@typescript-eslint/parser": "^8.72.1",
     "eslint": "^10.14.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "prettier": "^3.9.10",
     "typescript": "^5.8.3"
   }

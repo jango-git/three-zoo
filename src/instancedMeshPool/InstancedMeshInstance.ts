@@ -1,5 +1,6 @@
 import type { BufferGeometry, InstancedMesh, Material } from "three";
 import { Matrix4, Quaternion, Vector3 } from "three";
+
 import type { InstancedMeshPool } from "./InstancedMeshPool.js";
 
 export class InstancedMeshInstance {

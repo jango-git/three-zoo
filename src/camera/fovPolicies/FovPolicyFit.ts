@@ -2,10 +2,10 @@ import { clampFov, verticalFovFromHorizontal } from "./fovMath.js";
 import { FovPolicy } from "./FovPolicy.js";
 
 /**
- * Fills the viewport with the target frustum at any aspect ratio.
+ * Keeps the target frustum fully visible at any aspect ratio, like CSS object-fit: contain.
  *
- * Takes the narrower of the two vertical FOVs implied by the horizontal and vertical targets, so
- * neither target angle is ever exceeded (content outside the target rect is cropped).
+ * Takes the wider of the two vertical FOVs implied by the horizontal and vertical targets, so
+ * both target angles are always contained (the view may show more than the target rect).
  */
 export class FovPolicyFit extends FovPolicy {
   private fovHorizontalInternal: number;
@@ -42,7 +42,7 @@ export class FovPolicyFit extends FovPolicy {
   }
 
   public calculateFov(aspect: number): number {
-    return Math.min(
+    return Math.max(
       this.fovVerticalInternal,
       verticalFovFromHorizontal(this.fovHorizontalInternal, aspect),
     );

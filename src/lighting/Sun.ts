@@ -9,6 +9,8 @@ import {
   Vector3,
 } from "three";
 
+import { createHDRChannelReader, getHDRImage } from "./hdrData.js";
+
 const RGBA_CHANNEL_COUNT = 4;
 const RGB_CHANNEL_COUNT = 3;
 
@@ -165,7 +167,7 @@ export class Sun extends DirectionalLight {
   /**
    * Sets direction, color, and intensity in a single call.
    *
-   * @param texture - Must have image data.
+   * @param texture - Must have float or half float RGBA image data.
    * @param intensityScale - Multiplied by pixel luminance.
    */
   public setFromHDRTexture(texture: Texture, intensityScale = 1, distance = 1): void {
@@ -174,14 +176,14 @@ export class Sun extends DirectionalLight {
     this.setDirectionFromHDRTexture(texture, distance);
   }
 
-  /** @param texture - Must have image data. */
+  /** @param texture - Must have float or half float RGBA image data. */
   public setColorFromHDRTexture(texture: Texture): void {
     const { index } = this.findBrightestPixel(texture);
-    const data = texture.image.data;
+    const read = createHDRChannelReader(texture);
 
-    const r = data[index];
-    const g = data[index + 1];
-    const b = data[index + 2];
+    const r = read(index);
+    const g = read(index + 1);
+    const b = read(index + 2);
     const maxChannel = Math.max(r, g, b, 1);
 
     this.color.setRGB(r / maxChannel, g / maxChannel, b / maxChannel);
@@ -190,19 +192,18 @@ export class Sun extends DirectionalLight {
   /**
    * Intensity equals the luminance of the brightest pixel.
    *
-   * @param texture - Must have image data.
+   * @param texture - Must have float or half float RGBA image data.
    */
   public setIntensityFromHDRTexture(texture: Texture, scale = 1): void {
     const { luminance } = this.findBrightestPixel(texture);
     this.intensity = luminance * scale;
   }
 
-  /** @param texture - Must have image data. */
+  /** @param texture - Must have float or half float RGBA image data. */
   public setDirectionFromHDRTexture(texture: Texture, distance = 1): void {
     const { index } = this.findBrightestPixel(texture);
 
-    const width = texture.image.width;
-    const height = texture.image.height;
+    const { width, height } = getHDRImage(texture);
     const step = texture.format === RGBAFormat ? RGBA_CHANNEL_COUNT : RGB_CHANNEL_COUNT;
 
     // Convert to spherical coordinates
@@ -223,7 +224,8 @@ export class Sun extends DirectionalLight {
     index: number;
     luminance: number;
   } {
-    const data = texture.image.data;
+    const { data } = getHDRImage(texture);
+    const read = createHDRChannelReader(texture);
 
     let maxLuminance = 0;
     let maxIndex = 0;
@@ -231,9 +233,9 @@ export class Sun extends DirectionalLight {
     const step = texture.format === RGBAFormat ? RGBA_CHANNEL_COUNT : RGB_CHANNEL_COUNT;
 
     for (let i = 0; i < data.length; i += step) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+      const r = read(i);
+      const g = read(i + 1);
+      const b = read(i + 2);
       const luminance = LUMINANCE_R * r + LUMINANCE_G * g + LUMINANCE_B * b;
       if (luminance > maxLuminance) {
         maxLuminance = luminance;

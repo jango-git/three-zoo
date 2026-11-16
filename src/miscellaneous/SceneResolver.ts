@@ -1,4 +1,5 @@
 import { Material, Mesh, Object3D } from "three";
+
 import { SceneTraversal } from "./SceneTraversal.js";
 
 export class SceneResolver {

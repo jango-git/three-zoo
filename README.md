@@ -23,7 +23,7 @@ Reusable Three.js utilities. WebGL 1 compatible.
 npm install three-zoo
 ```
 
-Peer dep: `three` >=0.157.0 <0.180.0
+Peer dep: `three` >=0.157.0 <0.188.0
 
 ## License
 

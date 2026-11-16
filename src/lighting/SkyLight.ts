@@ -1,6 +1,8 @@
 import type { Texture } from "three";
 import { HemisphereLight, RGBAFormat } from "three";
 
+import { createHDRChannelReader, getHDRImage } from "./hdrData.js";
+
 const RGBA_CHANNEL_COUNT = 4;
 const RGB_CHANNEL_COUNT = 3;
 
@@ -36,7 +38,7 @@ interface Pixel {
  * Hemisphere light with HDR environment map support for automatic sky/ground color extraction.
  */
 export class SkyLight extends HemisphereLight {
-  /** @param texture - Must have image data. */
+  /** @param texture - Must have float or half float RGBA image data. */
   public setColorsFromHDRTexture(texture: Texture, options: SkyLightOptions = {}): void {
     const {
       skySampleCount = 100,
@@ -45,9 +47,8 @@ export class SkyLight extends HemisphereLight {
       gamma = 2.2,
     } = options;
 
-    const data = texture.image.data as Float32Array | Uint8Array;
-    const width = texture.image.width as number;
-    const height = texture.image.height as number;
+    const { data, width, height } = getHDRImage(texture);
+    const read = createHDRChannelReader(texture);
     const step = texture.format === RGBAFormat ? RGBA_CHANNEL_COUNT : RGB_CHANNEL_COUNT;
 
     const skyPixels: Pixel[] = [];
@@ -58,9 +59,9 @@ export class SkyLight extends HemisphereLight {
       const y = Math.floor(pixelIndex / width);
       const v = y / height;
 
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+      const r = read(i);
+      const g = read(i + 1);
+      const b = read(i + 2);
       const luminance = LUMINANCE_R * r + LUMINANCE_G * g + LUMINANCE_B * b;
 
       const pixel: Pixel = { r, g, b, lum: luminance };
