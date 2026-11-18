@@ -3,8 +3,6 @@ import { FovPolicy } from "./FovPolicy.js";
 
 /**
  * Preserves the horizontal FOV in landscape (aspect > 1) and the vertical FOV in portrait.
- *
- * Equivalent to DualFovCamera's projection behavior.
  */
 export class FovPolicyHybrid extends FovPolicy {
   private fovHorizontalInternal: number;
