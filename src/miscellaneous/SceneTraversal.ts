@@ -6,14 +6,21 @@ export type Constructor<T> = abstract new (...args: never[]) => T;
 
 /** All methods use depth-first traversal. */
 export class SceneTraversal {
-  /** @param name - Case-sensitive. */
-  public static getObjectByName(object: Object3D, name: string): Object3D | undefined {
-    if (object.name === name) {
-      return object;
+  /**
+   * @param name - Case-sensitive.
+   * @param type - Only an object of this type counts; others with the name are skipped.
+   */
+  public static getObjectByName<T extends Object3D = Object3D>(
+    object: Object3D,
+    name: string,
+    type?: Constructor<T>,
+  ): T | undefined {
+    if (object.name === name && (type === undefined || object instanceof type)) {
+      return object as T;
     }
 
     for (const child of object.children) {
-      const result = SceneTraversal.getObjectByName(child, name);
+      const result = SceneTraversal.getObjectByName(child, name, type);
       if (result) {
         return result;
       }
@@ -184,7 +191,7 @@ export class SceneTraversal {
         result.push(object);
       }
     } else {
-      if (object.name && filter.test(object.name)) {
+      if (object.name && testName(filter, object.name)) {
         result.push(object);
       }
     }
@@ -210,7 +217,7 @@ export class SceneTraversal {
             if (filter(material)) {
               result.push(material);
             }
-          } else if (filter.test(material.name)) {
+          } else if (testName(filter, material.name)) {
             result.push(material);
           }
         }
@@ -218,7 +225,7 @@ export class SceneTraversal {
         if (filter(object.material)) {
           result.push(object.material);
         }
-      } else if (filter.test(object.material.name)) {
+      } else if (testName(filter, object.material.name)) {
         result.push(object.material);
       }
     }
@@ -299,4 +306,10 @@ export class SceneTraversal {
       SceneTraversal.replaceMaterial(child, oldMaterial, newMaterial);
     }
   }
+}
+
+/** Tests a name from the start of it: a global or sticky RegExp would resume at `lastIndex`. */
+function testName(filter: RegExp, name: string): boolean {
+  filter.lastIndex = 0;
+  return filter.test(name);
 }

@@ -3,6 +3,22 @@
 Notable changes to three-zoo from 0.17.0 on. Versions follow semver; while the major is 0, a minor
 release may break the API. Breaking changes are marked.
 
+## Unreleased
+
+### Added
+
+- `SceneTraversal.getObjectByName` takes an optional type and then skips objects of other types
+  with the name.
+
+### Fixed
+
+- `InstancedMeshInstance.isAlive` is false once its pool is destroyed. Before, the instance
+  reported itself alive and its calls did nothing.
+- `SceneResolver.resolveMeshByName` returns the first mesh with the name and skips other objects
+  with that name. Before, it threw when the first object with the name was not a mesh.
+- `SceneTraversal.filterObjects` and `filterMaterials` match every name with a global or sticky
+  RegExp. Before, such a RegExp resumed at its `lastIndex` and skipped matches.
+
 ## 0.17.0 - 2026-11-16
 
 ### Added

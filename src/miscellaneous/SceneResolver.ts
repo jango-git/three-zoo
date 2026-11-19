@@ -12,9 +12,10 @@ export class SceneResolver {
     throw new Error(`Object3D with name "${name}" not found.`);
   }
 
+  /** Returns the first mesh with the name; objects of other types with the name are skipped. */
   public static resolveMeshByName(scene: Object3D, name: string): Mesh {
-    const result = SceneTraversal.getObjectByName(scene, name);
-    if (result instanceof Mesh) {
+    const result = SceneTraversal.getObjectByName(scene, name, Mesh);
+    if (result !== undefined) {
       return result;
     }
 

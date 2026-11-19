@@ -24,8 +24,9 @@ export class InstancedMeshInstance {
     this.handler = this.pool.allocate(geometry, material, tag);
   }
 
+  /** False once the instance or its pool is destroyed */
   public get isAlive(): boolean {
-    return this.handler >= 0;
+    return this.handler >= 0 && this.pool.isValidHandler(this.handler);
   }
 
   public static fromInstancedMesh(
@@ -49,8 +50,8 @@ export class InstancedMeshInstance {
   public destroy(): void {
     if (this.isAlive) {
       this.pool.deallocate(this.handler);
-      this.handler = -1;
     }
+    this.handler = -1;
   }
 
   public setPosition(source: Vector3, flushTransform = false): this {

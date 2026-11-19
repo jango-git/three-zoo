@@ -3,6 +3,8 @@ import { FovPolicy } from "./FovPolicy.js";
 
 /**
  * Preserves the horizontal FOV in landscape (aspect > 1) and the vertical FOV in portrait.
+ * At aspect 1 both FOVs are the same angle, so the FOV changes smoothly across a square view
+ * only when `fovHorizontal` equals `fovVertical`; otherwise it jumps between them there.
  */
 export class FovPolicyHybrid extends FovPolicy {
   private fovHorizontalInternal: number;
